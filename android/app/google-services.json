@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "975822631502",
+    "project_id": "canguixometre",
+    "storage_bucket": "canguixometre.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:975822631502:android:f9707b047e6bd6f0a4091f",
+        "android_client_info": {
+          "package_name": "cat.polgussi.can_guix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwOswaUE9Dd4KgFx-nsB5BkPf3DpPlMr4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
