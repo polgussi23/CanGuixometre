@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'dart:io';
 import 'dart:typed_data';
 //import '../services/api_service.dart';
-import 'package:image/image.dart' as img;
+//import 'package:image/image.dart' as img;
 //import '../services/user_provider.dart';
 import 'add_users_to_photo_page.dart';
 
@@ -25,7 +25,7 @@ class _UploadPhotoPageState extends State<UploadPhotoPage> {
   List<String> participants = [];
   DateTime _selectedDate = DateTime.now();
 
-  Future<Uint8List?> _compressImage(dynamic imageInput) async {
+  /*Future<Uint8List?> _compressImage(dynamic imageInput) async {
     Uint8List? imageBytes;
 
     if (imageInput is File) {
@@ -45,7 +45,7 @@ class _UploadPhotoPageState extends State<UploadPhotoPage> {
       return Uint8List.fromList(compressedImage);
     }
     return null;
-  }
+  }*/
 
   void _addParticipant() async {
     // Recuperem els participants actualitzats des de la pàgina AddUsersToPhotoPage
@@ -54,7 +54,8 @@ class _UploadPhotoPageState extends State<UploadPhotoPage> {
       MaterialPageRoute(
         builder: (context) => AddUsersToPhotoPage(
           title: "QUÍ SURT A LA FOTO?",
-          selectedParticipants: participants, // Passar la llista de participants
+          selectedParticipants:
+              participants, // Passar la llista de participants
         ),
       ),
     );
@@ -62,7 +63,8 @@ class _UploadPhotoPageState extends State<UploadPhotoPage> {
     // Verifiquem que updatedParticipants no sigui nul
     if (updatedParticipants != null && updatedParticipants is List<String>) {
       setState(() {
-        participants = updatedParticipants; // Actualitzem la llista amb els nous participants
+        participants =
+            updatedParticipants; // Actualitzem la llista amb els nous participants
       });
     }
   }
@@ -93,7 +95,7 @@ class _UploadPhotoPageState extends State<UploadPhotoPage> {
     }
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('PENJAR IMATGE')),
@@ -138,7 +140,8 @@ class _UploadPhotoPageState extends State<UploadPhotoPage> {
             ElevatedButton.icon(
               onPressed: () => _addParticipant(),
               icon: Icon(Icons.person_add, color: Colors.black),
-              label: Text('Afegir Usuaris', style: TextStyle(color: Colors.black)),
+              label:
+                  Text('Afegir Usuaris', style: TextStyle(color: Colors.black)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow,
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -152,15 +155,17 @@ class _UploadPhotoPageState extends State<UploadPhotoPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () => 
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => UploadingImagePage(
-                        selectedImage: widget.selectedImage,
-                        selectedDate: _selectedDate,
-                        participants: participants,
-                      ),
-                    )),
-                  label: Text('Pujar Imatge', style: TextStyle(color: Colors.white)),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UploadingImagePage(
+                          selectedImage: widget.selectedImage,
+                          selectedDate: _selectedDate,
+                          participants: participants,
+                        ),
+                      )),
+                  label: Text('Pujar Imatge',
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
