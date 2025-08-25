@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 
 class ApiService {
-  
   // ------------------------------- API PRO -------------------------------
   static String apiUrl = "https://polgussi.cat:3001"; //                 |
   // -----------------------------------------------------------------------
@@ -14,16 +13,15 @@ class ApiService {
   //static String apiUrl = "https://polgussi.cat:4001"; //                   |
   // -----------------------------------------------------------------------
 
-  void initState(){
-    if (!kIsWeb){
+  void initState() {
+    if (!kIsWeb) {
       // ------------------------------- API PRO -------------------------------
-      apiUrl = 'http://polgussi.cat:3000';// HTTP //                         |
+      apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
       // -----------------------------------------------------------------------
 
       // ------------------------------- API DEV -------------------------------
       //apiUrl = 'http://polgussi.cat:4000'; //                                  |
       // -----------------------------------------------------------------------
-
     }
   }
 
@@ -41,7 +39,8 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>?> login(String usuari, String password) async {
+  static Future<Map<String, dynamic>?> login(
+      String usuari, String password) async {
     final url = Uri.parse('$apiUrl/login');
     try {
       final response = await http.post(
@@ -69,13 +68,13 @@ class ApiService {
 
   static Future<void> sendFirebaseToken() async {
     final url = Uri.parse('$apiUrl/fb_token');
-    
+
     // Obtenir el token a Firebase
     NotificationService notificationService = NotificationService();
     String? token = await notificationService.getDeviceToken();
     //List<String> tokens = [];
     //tokens.add(token!);
-    
+
     try {
       final response = await http.post(
         url,
@@ -120,21 +119,21 @@ class ApiService {
 
   static Future<List<dynamic>> getBonusUsers() async {
     final response = await http.get(Uri.parse('$apiUrl/usuaris/bonus'));
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
       return data;
-    }else{
+    } else {
       throw Exception('Error carregant usuaris amb bonus');
     }
   }
 
   static Future<String> getUserName(int id) async {
     final response = await http.get(Uri.parse('$apiUrl/usuari/$id'));
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
       String nom = data[0]['nom'];
       return nom;
-    }else{
+    } else {
       throw Exception("Error carregant nom d'usuari");
     }
   }
@@ -148,8 +147,9 @@ class ApiService {
     }
   }
 
-  static Future<List<dynamic>> getNonScoreImagesUser(userId) async{
-    final response = await http.get(Uri.parse('$apiUrl/imatges/noScore/$userId'));
+  static Future<List<dynamic>> getNonScoreImagesUser(userId) async {
+    final response =
+        await http.get(Uri.parse('$apiUrl/imatges/noScore/$userId'));
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -158,7 +158,8 @@ class ApiService {
   }
 
   static Future<List<ImageData>> getImages(int page, int limit) async {
-    final response = await http.get(Uri.parse('$apiUrl/imatges?page=$page&limit=$limit'));
+    final response =
+        await http.get(Uri.parse('$apiUrl/imatges?page=$page&limit=$limit'));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -169,14 +170,15 @@ class ApiService {
       }
 
       List<dynamic> imagesData = jsonResponse['images'];
-      
+
       List<ImageData> imageDataList = imagesData.map((imgData) {
         final image = base64.decode(imgData['image']);
         final name = imgData['name'];
         final createdAt = DateTime.parse(imgData['created_at']);
         final usuari = imgData['user_name'];
-        
-        return ImageData(image: image, name: name, createdAt: createdAt, usuari: usuari);
+
+        return ImageData(
+            image: image, name: name, createdAt: createdAt, usuari: usuari);
       }).toList();
 
       // Ordena la llista per "name"
@@ -190,16 +192,16 @@ class ApiService {
 
   static Future<List<ImageData>> getImagesFromId(List<int> id) async {
     final idsParams = id.join(', ');
-    
+
     final response = await http.get(Uri.parse('$apiUrl/imatges/$idsParams'));
 
-    if(response.statusCode==200){
+    if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
 
       if (jsonResponse['images'] == null || jsonResponse['images'] is! List) {
         return []; // Retorna una llista buida si 'images' és null
       }
-    
+
       List<dynamic> imagesData = jsonResponse['images'];
 
       List<ImageData> imageDataList = imagesData.map((imgData) {
@@ -207,18 +209,18 @@ class ApiService {
         final name = imgData['name'];
         final createdAt = DateTime.parse(imgData['created_at']);
         final usuari = imgData['user_name'];
-        
-        return ImageData(image: image, name: name, createdAt: createdAt, usuari: usuari);
+
+        return ImageData(
+            image: image, name: name, createdAt: createdAt, usuari: usuari);
       }).toList();
 
       // Ordena la llista per "name"
       imageDataList.sort((a, b) => b.name.compareTo(a.name));
 
       return imageDataList;
-    }else{
+    } else {
       throw Exception("Error en carregar imatges");
     }
-
   }
 
   static Future<List<UserImageData>> getAllUserProfileImages() async {
@@ -239,7 +241,7 @@ class ApiService {
         // Suposant que el JSON conté les propietats 'image', 'name', i 'user_id'
         final image = base64.decode(imgData['image']);
         final name = imgData['name'];
-        final user = imgData['username'];  // ID d'usuari associat amb la imatge
+        final user = imgData['username']; // ID d'usuari associat amb la imatge
 
         return UserImageData(
           image: image,
@@ -254,7 +256,8 @@ class ApiService {
 
   static Future<Uint8List?> getUserProfileImage(String userName) async {
     try {
-      final response = await http.get(Uri.parse('$apiUrl/users/$userName/profile-image'));
+      final response =
+          await http.get(Uri.parse('$apiUrl/users/$userName/profile-image'));
 
       if (response.statusCode == 200) {
         // Assumint que la imatge es retorna com a bytes
@@ -269,7 +272,8 @@ class ApiService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getScoresFromImage(String imgName) async {
+  static Future<List<Map<String, dynamic>>> getScoresFromImage(
+      String imgName) async {
     final response = await http.get(Uri.parse('$apiUrl/scores/image/$imgName'));
 
     if (response.statusCode == 200) {
@@ -280,7 +284,8 @@ class ApiService {
       return data.map<Map<String, dynamic>>((item) {
         return {
           'usuari': item['usuari'],
-          'puntuacions': (item['puntuacions'] as List<dynamic>).map<Map<String, dynamic>>((score) {
+          'puntuacions': (item['puntuacions'] as List<dynamic>)
+              .map<Map<String, dynamic>>((score) {
             return {
               'descripcio': score['descripcio'],
               'valor': score['valor'],
@@ -291,7 +296,8 @@ class ApiService {
       }).toList();
     } else {
       // Llençar una excepció si la sol·licitud falla
-      throw Exception('Error carregant les puntuacions: ${response.statusCode}');
+      throw Exception(
+          'Error carregant les puntuacions: ${response.statusCode}');
     }
   }
 
@@ -306,11 +312,16 @@ class ApiService {
     }
   }
 
-  static Future<void> uploadScores(String user, List<String> descPuntuacions, String timestamp) async{
+  static Future<void> uploadScores(
+      String user, List<String> descPuntuacions, String timestamp) async {
     final response = await http.post(
       Uri.parse('$apiUrl/puntuacions'),
       headers: <String, String>{'Content-Type': 'application/json'},
-      body: jsonEncode(<String, dynamic>{'nom': user, 'puntuacio': descPuntuacions, 'imatge': timestamp}),
+      body: jsonEncode(<String, dynamic>{
+        'nom': user,
+        'puntuacio': descPuntuacions,
+        'imatge': timestamp
+      }),
     );
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Error afegint la puntuació');
@@ -328,7 +339,8 @@ class ApiService {
     }
   }
 
-  static Future<void> updateScores(List<List<Map<String, dynamic>>> participants, String name) async {
+  static Future<void> updateScores(
+      List<List<Map<String, dynamic>>> participants, String name) async {
     final response = await http.post(
       Uri.parse('$apiUrl/scores/update'),
       headers: {
@@ -341,11 +353,13 @@ class ApiService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Error actualitzant les puntuacions: ${response.statusCode}');
+      throw Exception(
+          'Error actualitzant les puntuacions: ${response.statusCode}');
     }
   }
 
-  static Future<void> updateScoreUserImage(String usuari, List<String> puntuacions, String nomImg) async {
+  static Future<void> updateScoreUserImage(
+      String usuari, List<String> puntuacions, String nomImg) async {
     final response = await http.post(
       Uri.parse('$apiUrl/scores/update-user'),
       headers: {
@@ -359,11 +373,13 @@ class ApiService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Error actualitzant les puntuacions: ${response.statusCode}');
+      throw Exception(
+          'Error actualitzant les puntuacions: ${response.statusCode}');
     }
   }
 
-  static Future<void> updateUsersImage(List<String> usuaris, String nomImg) async {
+  static Future<void> updateUsersImage(
+      List<String> usuaris, String nomImg) async {
     final response = await http.post(
       Uri.parse('$apiUrl/imatge/update-users'),
       headers: {
@@ -376,11 +392,13 @@ class ApiService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Error actualitzant les puntuacions: ${response.statusCode}');
+      throw Exception(
+          'Error actualitzant les puntuacions: ${response.statusCode}');
     }
   }
 
-  static Future<http.StreamedResponse> uploadImage(String timestamp, dynamic image, List<String> participants, int? userId) async {
+  static Future<http.StreamedResponse> uploadImage(String timestamp,
+      dynamic image, List<String> participants, int? userId) async {
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$apiUrl/imatges'), // Endpoint de l'API
@@ -408,7 +426,8 @@ class ApiService {
     return response;
   }
 
-  static Future<http.StreamedResponse> uploadImageWithParticipants(File image, List<String> participants, num score) async {
+  static Future<http.StreamedResponse> uploadImageWithParticipants(
+      File image, List<String> participants, num score) async {
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$apiUrl/imatges_participants'),
@@ -439,7 +458,8 @@ class ApiService {
     } else if (image is Uint8List) {
       // Web
       request.files.add(
-        http.MultipartFile.fromBytes('profile_image', image, filename: 'upload.jpg'),
+        http.MultipartFile.fromBytes('profile_image', image,
+            filename: 'upload.jpg'),
       );
     } else {
       throw Exception('Tipus d\'imatge no suportat');
@@ -451,13 +471,16 @@ class ApiService {
     return response;
   }
 
-  static Future<http.Response> editarNomUsuari(int? userId, String nomNou) async {
+  static Future<http.Response> editarNomUsuari(
+      int? userId, String nomNou) async {
     final response = await http.post(
       Uri.parse('$apiUrl/usuari/$userId/edita-nom'),
       headers: {
-        'Content-Type': 'application/json',  // Assegura't de posar el tipus de contingut com a JSON
+        'Content-Type':
+            'application/json', // Assegura't de posar el tipus de contingut com a JSON
       },
-      body: json.encode({'nom': nomNou}),  // El cos de la petició serà un JSON amb el nou nom
+      body: json.encode(
+          {'nom': nomNou}), // El cos de la petició serà un JSON amb el nou nom
     );
 
     return response;
@@ -467,9 +490,10 @@ class ApiService {
   static Future<http.Response> crearNouAvis({
     required int idUsuariCreador,
     required String dataAvis, // Format 'YYYY-MM-DD'
-    String? horaAvis,         // Format 'HH:MM:SS', pot ser null
-    required String tipusApat,  // 'dinar' o 'sopar'
-    List<String>? usuarisParticipants, // Llista d'IDs d'usuaris, pot ser buida o null
+    String? horaAvis, // Format 'HH:MM:SS', pot ser null
+    required String tipusApat, // 'dinar' o 'sopar'
+    List<String>?
+        usuarisParticipants, // Llista d'IDs d'usuaris, pot ser buida o null
   }) async {
     final url = Uri.parse('$apiUrl/avisos/nou');
 
@@ -510,7 +534,8 @@ class ApiService {
   }
 
   // Funció per eliminar un avís complet
-  static Future<http.Response> eliminarAvis({required int idAvis, required int idUsuariCreador}) async {
+  static Future<http.Response> eliminarAvis(
+      {required int idAvis, required int idUsuariCreador}) async {
     final url = Uri.parse('$apiUrl/avisos/$idAvis');
 
     try {
@@ -518,15 +543,15 @@ class ApiService {
         url,
         headers: {'Content-Type': 'application/json'},
         // Enviem l'ID de l'usuari creador per a la validació al servidor
-        body: json.encode({'id_usuari_creador': idUsuariCreador}), 
+        body: json.encode({'id_usuari_creador': idUsuariCreador}),
       );
       return response;
     } catch (e) {
       print('Error al eliminar l\'avís $idAvis: $e');
-      throw Exception('No s\'ha pogut connectar amb l\'API per eliminar l\'avís.');
+      throw Exception(
+          'No s\'ha pogut connectar amb l\'API per eliminar l\'avís.');
     }
   }
-
 
   // Funció per afegir un usuari a un avís existent (POST /avisos/:idAvis/afegir-usuari)
   static Future<http.Response> afegirUsuariAvisExistent({
@@ -548,7 +573,8 @@ class ApiService {
       return response;
     } catch (e) {
       print('Error al afegir usuari a avís existent: $e');
-      throw Exception('No s\'ha pogut connectar amb l\'API per afegir l\'usuari.');
+      throw Exception(
+          'No s\'ha pogut connectar amb l\'API per afegir l\'usuari.');
     }
   }
 
@@ -566,7 +592,8 @@ class ApiService {
       return response;
     } catch (e) {
       print('Error al eliminar usuari de l\'avís $idAvis: $e');
-      throw Exception('No s\'ha pogut connectar amb l\'API per desapuntar l\'usuari.');
+      throw Exception(
+          'No s\'ha pogut connectar amb l\'API per desapuntar l\'usuari.');
     }
   }
 
@@ -579,10 +606,10 @@ class ApiService {
       return response;
     } catch (e) {
       print('Error al obtenir avisos futurs: $e');
-      throw Exception('No s\'ha pogut connectar amb l\'API per obtenir els avisos.');
+      throw Exception(
+          'No s\'ha pogut connectar amb l\'API per obtenir els avisos.');
     }
   }
-
 }
 
 class ImageData {
@@ -591,7 +618,11 @@ class ImageData {
   final DateTime createdAt;
   final String usuari;
 
-  ImageData({required this.image, required this.name, required this.createdAt, required this.usuari});
+  ImageData(
+      {required this.image,
+      required this.name,
+      required this.createdAt,
+      required this.usuari});
 }
 
 class UserImageData {

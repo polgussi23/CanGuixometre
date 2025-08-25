@@ -37,7 +37,8 @@ class _RankingPageState extends State<RankingPage> {
 
   Future<void> fetchUserProfileImages() async {
     try {
-      List<UserImageData> imagesData = await ApiService.getAllUserProfileImages();
+      List<UserImageData> imagesData =
+          await ApiService.getAllUserProfileImages();
       final Map<String, Uint8List> imagesMap = {};
       for (var image in imagesData) {
         imagesMap[image.user] = image.image;
@@ -57,21 +58,21 @@ class _RankingPageState extends State<RankingPage> {
       context: context,
       builder: (BuildContext context) {
         return GestureDetector(
-          onTap:() => Navigator.pop(context),
+          onTap: () => Navigator.pop(context),
           child: Dialog(
             backgroundColor: Colors.transparent,
             child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Center(
-                      child: largeImage != null
-                          ? Image.memory(largeImage)
-                          : Image.asset('assets/images/avatar_placeholder.png'),
-                    ),
+              children: [
+                Positioned.fill(
+                  child: Center(
+                    child: largeImage != null
+                        ? Image.memory(largeImage)
+                        : Image.asset('assets/images/avatar_placeholder.png'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
         );
       },
     );
@@ -83,7 +84,8 @@ class _RankingPageState extends State<RankingPage> {
       if (ub['nom'] == userName) {
         if (ub['descripcio'] == 'Més dies seguits') {
           medals.add('recordDies_coin.png');
-        } else if (ub['descripcio'] == 'Més plats diferents provats de la carta') {
+        } else if (ub['descripcio'] ==
+            'Més plats diferents provats de la carta') {
           medals.add('exploradorSabors_coin.png');
         }
       }
@@ -98,13 +100,14 @@ class _RankingPageState extends State<RankingPage> {
         backgroundColor: Colors.transparent,
         child: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Image.asset('assets/images/$medalAsset', width: 300, height: 300),
+          child:
+              Image.asset('assets/images/$medalAsset', width: 300, height: 300),
         ),
       ),
     );
   }
 
-  Widget _buildPodiumMedal(String medalAsset, double left, double bottom) {
+  /*Widget _buildPodiumMedal(String medalAsset, double left, double bottom) {
     return Positioned(
       left: left,
       bottom: bottom,
@@ -117,15 +120,13 @@ class _RankingPageState extends State<RankingPage> {
         ),
       ),
     );
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('RANKING'),
-        actions: [
-          PopupMenuButton<String>(
+      appBar: AppBar(title: const Text('RANKING'), actions: [
+        PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (value) async {
               if (value == 'el_meu_usuari') {
@@ -138,21 +139,20 @@ class _RankingPageState extends State<RankingPage> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'el_meu_usuari',
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Icon(Icons.person),
-                    SizedBox(width: 10,),
-                    Text('El meu Usuari'),
-                  ],
-                )
-              ),
-            ]
-          )
-        ]
-      ),
+                  const PopupMenuItem<String>(
+                      value: 'el_meu_usuari',
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Icon(Icons.person),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text('El meu Usuari'),
+                        ],
+                      )),
+                ])
+      ]),
       body: rankings.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -183,7 +183,8 @@ class _RankingPageState extends State<RankingPage> {
                                 child: Stack(
                                   children: [
                                     _buildPodiumMedals(
-                                      medals: _getMedalsForUser(rankings[0]['nom']),
+                                      medals:
+                                          _getMedalsForUser(rankings[0]['nom']),
                                       containerHeight: 150,
                                     ),
                                   ],
@@ -199,13 +200,15 @@ class _RankingPageState extends State<RankingPage> {
                                 width: 80,
                                 height: 120,
                                 decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 192, 192, 192),
+                                  color:
+                                      const Color.fromARGB(255, 192, 192, 192),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Stack(
                                   children: [
                                     _buildPodiumMedals(
-                                      medals: _getMedalsForUser(rankings[1]['nom']),
+                                      medals:
+                                          _getMedalsForUser(rankings[1]['nom']),
                                       containerHeight: 120,
                                     ),
                                   ],
@@ -221,13 +224,15 @@ class _RankingPageState extends State<RankingPage> {
                                 width: 80,
                                 height: 100,
                                 decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 205, 127, 50),
+                                  color:
+                                      const Color.fromARGB(255, 205, 127, 50),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Stack(
                                   children: [
                                     _buildPodiumMedals(
-                                      medals: _getMedalsForUser(rankings[2]['nom']),
+                                      medals:
+                                          _getMedalsForUser(rankings[2]['nom']),
                                       containerHeight: 100,
                                     ),
                                   ],
@@ -241,12 +246,18 @@ class _RankingPageState extends State<RankingPage> {
                               child: Column(
                                 children: [
                                   GestureDetector(
-                                    onTap: () => _showLargeImage(rankings[0]['nom']),
+                                    onTap: () =>
+                                        _showLargeImage(rankings[0]['nom']),
                                     child: CircleAvatar(
                                       radius: 50,
-                                      backgroundImage: userProfileImages[rankings[0]['nom']] != null
-                                          ? MemoryImage(userProfileImages[rankings[0]['nom']]!)
-                                          : const AssetImage('assets/images/avatar_placeholder.png') as ImageProvider,
+                                      backgroundImage: userProfileImages[
+                                                  rankings[0]['nom']] !=
+                                              null
+                                          ? MemoryImage(userProfileImages[
+                                              rankings[0]['nom']]!)
+                                          : const AssetImage(
+                                                  'assets/images/avatar_placeholder.png')
+                                              as ImageProvider,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -260,7 +271,8 @@ class _RankingPageState extends State<RankingPage> {
                                   ),
                                   Text(
                                     '${rankings[0]['puntuacio']}',
-                                    style: const TextStyle(fontSize: 20, color: Colors.black),
+                                    style: const TextStyle(
+                                        fontSize: 20, color: Colors.black),
                                   ),
                                 ],
                               ),
@@ -273,18 +285,25 @@ class _RankingPageState extends State<RankingPage> {
                               child: Column(
                                 children: [
                                   GestureDetector(
-                                    onTap: () => _showLargeImage(rankings[1]['nom']),
+                                    onTap: () =>
+                                        _showLargeImage(rankings[1]['nom']),
                                     child: CircleAvatar(
                                       radius: 40,
-                                      backgroundImage: userProfileImages[rankings[1]['nom']] != null
-                                          ? MemoryImage(userProfileImages[rankings[1]['nom']]!)
-                                          : const AssetImage('assets/images/avatar_placeholder.png') as ImageProvider,
+                                      backgroundImage: userProfileImages[
+                                                  rankings[1]['nom']] !=
+                                              null
+                                          ? MemoryImage(userProfileImages[
+                                              rankings[1]['nom']]!)
+                                          : const AssetImage(
+                                                  'assets/images/avatar_placeholder.png')
+                                              as ImageProvider,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     rankings[1]['nom'],
-                                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.black),
                                   ),
                                   Text(
                                     '${rankings[1]['puntuacio']}',
@@ -305,18 +324,25 @@ class _RankingPageState extends State<RankingPage> {
                               child: Column(
                                 children: [
                                   GestureDetector(
-                                    onTap: () => _showLargeImage(rankings[2]['nom']),
+                                    onTap: () =>
+                                        _showLargeImage(rankings[2]['nom']),
                                     child: CircleAvatar(
                                       radius: 40,
-                                      backgroundImage: userProfileImages[rankings[2]['nom']] != null
-                                          ? MemoryImage(userProfileImages[rankings[2]['nom']]!)
-                                          : const AssetImage('assets/images/avatar_placeholder.png') as ImageProvider,
+                                      backgroundImage: userProfileImages[
+                                                  rankings[2]['nom']] !=
+                                              null
+                                          ? MemoryImage(userProfileImages[
+                                              rankings[2]['nom']]!)
+                                          : const AssetImage(
+                                                  'assets/images/avatar_placeholder.png')
+                                              as ImageProvider,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     rankings[2]['nom'],
-                                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.black),
                                   ),
                                   Text(
                                     '${rankings[2]['puntuacio']}',
@@ -341,7 +367,8 @@ class _RankingPageState extends State<RankingPage> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final actualIndex = index + 3;
-                          final medals = _getMedalsForUser(rankings[actualIndex]['nom']);
+                          final medals =
+                              _getMedalsForUser(rankings[actualIndex]['nom']);
 
                           return ListTile(
                             leading: Row(
@@ -360,12 +387,18 @@ class _RankingPageState extends State<RankingPage> {
                                 ),
                                 const SizedBox(width: 10),
                                 GestureDetector(
-                                  onTap: () => _showLargeImage(rankings[actualIndex]['nom']),
+                                  onTap: () => _showLargeImage(
+                                      rankings[actualIndex]['nom']),
                                   child: CircleAvatar(
                                     radius: 20,
-                                    backgroundImage: userProfileImages[rankings[actualIndex]['nom']] != null
-                                        ? MemoryImage(userProfileImages[rankings[actualIndex]['nom']]!)
-                                        : const AssetImage('assets/images/avatar_placeholder.png') as ImageProvider,
+                                    backgroundImage: userProfileImages[
+                                                rankings[actualIndex]['nom']] !=
+                                            null
+                                        ? MemoryImage(userProfileImages[
+                                            rankings[actualIndex]['nom']]!)
+                                        : const AssetImage(
+                                                'assets/images/avatar_placeholder.png')
+                                            as ImageProvider,
                                   ),
                                 ),
                               ],
@@ -380,26 +413,30 @@ class _RankingPageState extends State<RankingPage> {
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                ...medals.map((medal) => 
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4.0),
-                                    child: GestureDetector(
-                                      onTap: () => _showMedalPopup(medal),
-                                      child: Image.asset(
-                                        'assets/images/$medal',
-                                        width: 36,
-                                        height: 36,
+                                ...medals
+                                    .map(
+                                      (medal) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 4.0),
+                                        child: GestureDetector(
+                                          onTap: () => _showMedalPopup(medal),
+                                          child: Image.asset(
+                                            'assets/images/$medal',
+                                            width: 36,
+                                            height: 36,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                ).toList(),
+                                    )
+                                    .toList(),
                                 const SizedBox(width: 16),
                                 Text('${rankings[actualIndex]['puntuacio']}'),
                               ],
                             ),
                           );
                         },
-                        childCount: rankings.length > 3 ? rankings.length - 3 : 0,
+                        childCount:
+                            rankings.length > 3 ? rankings.length - 3 : 0,
                       ),
                     ),
                   ),
@@ -408,30 +445,34 @@ class _RankingPageState extends State<RankingPage> {
             ),
     );
   }
-  Widget _buildPodiumMedals({required List<String> medals, required double containerHeight}) {
+
+  Widget _buildPodiumMedals(
+      {required List<String> medals, required double containerHeight}) {
     if (medals.isEmpty) return const SizedBox.shrink();
 
     final medalSize = medals.length > 1 ? 32.0 : 40.0;
-    
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: medals.map((medal) => 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: GestureDetector(
-                onTap: () => _showMedalPopup(medal),
-                child: Image.asset(
-                  'assets/images/$medal',
-                  width: medalSize,
-                  height: medalSize,
+          children: medals
+              .map(
+                (medal) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: GestureDetector(
+                    onTap: () => _showMedalPopup(medal),
+                    child: Image.asset(
+                      'assets/images/$medal',
+                      width: medalSize,
+                      height: medalSize,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ).toList(),
+              )
+              .toList(),
         ),
       ),
     );
