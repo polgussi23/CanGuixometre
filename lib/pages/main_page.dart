@@ -8,7 +8,6 @@ import 'photo_gallery_page.dart';
 import 'history_page.dart';
 //import 'edit_user_page.dart';
 
-
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -26,7 +25,7 @@ class _MainPageState extends State<MainPage> {
   ];
 
   // Versió actual de l'app
-  final currentVersion = "1.3.1"; // VERSIÓ ACTUAL APP
+  final currentVersion = "1.3.2"; // VERSIÓ ACTUAL APP
 
   final ApiService _apiService = ApiService(); // Instància de ApiService
 
@@ -52,7 +51,7 @@ class _MainPageState extends State<MainPage> {
       print("Error al fer la comprovació d'actualització: $e");
     }
   }
-  
+
   void _showUpdateDialog() {
     showDialog(
       context: context,
@@ -81,46 +80,50 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> openGooglePlay() async {
-  // Canvia "com.example.app" pel package id de la teva aplicació
-  const String packageId = 'cat.polgussi.can_guix';
-  
-  // Primer intentem amb el protocol 'market://'
-  final Uri marketUri = Uri.parse('market://details?id=$packageId');
-  // També tenim l'enllaç web com a fallback
-  final Uri webUri = Uri.parse('https://play.google.com/store/apps/details?id=$packageId');
+    // Canvia "com.example.app" pel package id de la teva aplicació
+    const String packageId = 'cat.polgussi.can_guix';
 
-  // Comprovem si és possible obrir l'URI amb market://
-  if (await canLaunchUrl(marketUri)) {
-    await launchUrl(marketUri);
-  } else if (await canLaunchUrl(webUri)) {
-    // Fallback al web si no funciona el market://
-    await launchUrl(webUri);
-  } else {
-    throw 'No es pot obrir el Google Play Store.';
+    // Primer intentem amb el protocol 'market://'
+    final Uri marketUri = Uri.parse('market://details?id=$packageId');
+    // També tenim l'enllaç web com a fallback
+    final Uri webUri =
+        Uri.parse('https://play.google.com/store/apps/details?id=$packageId');
+
+    // Comprovem si és possible obrir l'URI amb market://
+    if (await canLaunchUrl(marketUri)) {
+      await launchUrl(marketUri);
+    } else if (await canLaunchUrl(webUri)) {
+      // Fallback al web si no funciona el market://
+      await launchUrl(webUri);
+    } else {
+      throw 'No es pot obrir el Google Play Store.';
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        selectedItemColor: Colors.orange, // Ícon seleccionat de color taronja
-        unselectedItemColor: Colors.white, // Ícon no seleccionat de color negre
-        //backgroundColor: Colors.white, // Fons del BottomNavigationBar blanc
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.leaderboard), label: 'Ranking'),
-          BottomNavigationBarItem(icon: Icon(Icons.image), label: 'Galeria'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Història'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Agenda'), 
-        ],
-      )
-    );
+        body: _pages[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          selectedItemColor: Colors.orange, // Ícon seleccionat de color taronja
+          unselectedItemColor:
+              Colors.white, // Ícon no seleccionat de color negre
+          //backgroundColor: Colors.white, // Fons del BottomNavigationBar blanc
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.leaderboard), label: 'Ranking'),
+            BottomNavigationBarItem(icon: Icon(Icons.image), label: 'Galeria'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book), label: 'Història'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_month), label: 'Agenda'),
+          ],
+        ));
   }
 }

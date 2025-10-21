@@ -98,6 +98,15 @@ class ApiService {
     }
   }
 
+  static Future<List<dynamic>> getEndDate() async {
+    final response = await http.get(Uri.parse('$apiUrl/endDate'));
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error carregant la data de finalització');
+    }
+  }
+
   static Future<List<dynamic>> getRankings() async {
     final response = await http.get(Uri.parse('$apiUrl/puntuacions'));
     if (response.statusCode == 200) {
@@ -494,6 +503,7 @@ class ApiService {
     required String tipusApat, // 'dinar' o 'sopar'
     List<String>?
         usuarisParticipants, // Llista d'IDs d'usuaris, pot ser buida o null
+    String? missatge,
   }) async {
     final url = Uri.parse('$apiUrl/avisos/nou');
 
@@ -501,23 +511,10 @@ class ApiService {
       'id_usuari_creador': idUsuariCreador,
       'data_avis': dataAvis,
       'tipus_apat': tipusApat,
+      'hora_avis': (horaAvis != null && horaAvis.isNotEmpty) ? horaAvis : null,
+      'usuaris_participants': usuarisParticipants ?? [],
+      'missatge': missatge ?? null,
     };
-
-    // Afegim l'hora si no és null
-    if (horaAvis != null && horaAvis.isNotEmpty) {
-      body['hora_avis'] = horaAvis;
-    } else {
-      // Si és null o buida, s'envia com a null a l'API
-      body['hora_avis'] = null;
-    }
-
-    // Afegim els participants si es proporcionen
-    if (usuarisParticipants != null) {
-      body['usuaris_participants'] = usuarisParticipants;
-    } else {
-      // Si no es proporcionen, s'envia un array buit per consistència amb l'API
-      body['usuaris_participants'] = [];
-    }
 
     try {
       final response = await http.post(
@@ -528,7 +525,6 @@ class ApiService {
       return response;
     } catch (e) {
       print('Error al crear nou avís: $e');
-      // Llançar una excepció per gestionar-la a la UI o en un nivell superior
       throw Exception('No s\'ha pogut connectar amb l\'API per crear l\'avís.');
     }
   }

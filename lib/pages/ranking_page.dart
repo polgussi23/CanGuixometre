@@ -1,4 +1,6 @@
 //import 'dart:io';
+import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,12 +20,14 @@ class _RankingPageState extends State<RankingPage> {
   List<dynamic> rankings = [];
   List<dynamic> usuarisBonus = [];
   Map<String, Uint8List> userProfileImages = {};
+  DateTime? endDate;
 
   @override
   void initState() {
     super.initState();
     fetchRankings();
     fetchUserProfileImages();
+    getEndDate();
   }
 
   Future<void> fetchRankings() async {
@@ -49,6 +53,27 @@ class _RankingPageState extends State<RankingPage> {
     } catch (e) {
       print('Error al carregar les imatges dels usuaris: $e');
     }
+  }
+
+  Future<void> getEndDate() async {
+    try {
+      List<dynamic> data = await ApiService.getEndDate();
+      if (data.isNotEmpty) {
+        setState(() {
+          endDate = DateTime.parse(data[0]['date']);
+        });
+      }
+    } catch (e) {
+      print('Error al carregar la data de finalització: $e');
+    }
+  }
+
+  String _titleText() {
+    // Fer la diferència entre la data actual i la data de finalització
+    if (endDate == null) return 'RANKING';
+    final difference = endDate!.difference(DateTime.now());
+    if (difference.isNegative) return 'FINALITZAT!';
+    return 'Queden ${difference.inDays} dies';
   }
 
   void _showLargeImage(String userName) async {
@@ -125,7 +150,7 @@ class _RankingPageState extends State<RankingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('RANKING'), actions: [
+      appBar: AppBar(title: Text(_titleText()), actions: [
         PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (value) async {

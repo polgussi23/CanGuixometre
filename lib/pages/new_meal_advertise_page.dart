@@ -57,19 +57,24 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
 
             if (a['hora_avis'] != null) {
               final partsA = (a['hora_avis'] as String).split(':');
-              dateTimeA = dateTimeA.add(Duration(hours: int.parse(partsA[0]), minutes: int.parse(partsA[1])));
+              dateTimeA = dateTimeA.add(Duration(
+                  hours: int.parse(partsA[0]), minutes: int.parse(partsA[1])));
             }
             if (b['hora_avis'] != null) {
               final partsB = (b['hora_avis'] as String).split(':');
-              dateTimeB = dateTimeB.add(Duration(hours: int.parse(partsB[0]), minutes: int.parse(partsB[1])));
+              dateTimeB = dateTimeB.add(Duration(
+                  hours: int.parse(partsB[0]), minutes: int.parse(partsB[1])));
             }
             return dateTimeA.compareTo(dateTimeB);
           });
         });
       } else {
-        print('Error al obtenir avisos: ${response.statusCode} - ${response.body}');
+        print(
+            'Error al obtenir avisos: ${response.statusCode} - ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al carregar avisos: ${response.statusCode}')),
+          SnackBar(
+              content:
+                  Text('Error al carregar avisos: ${response.statusCode}')),
         );
       }
     } catch (e) {
@@ -86,16 +91,21 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
     final DateTime today = DateTime(now.year, now.month, now.day);
     final DateTime tomorrow = DateTime(now.year, now.month, now.day + 1);
 
-    if (date.year == today.year && date.month == today.month && date.day == today.day) {
+    if (date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day) {
       return 'Avui';
-    } else if (date.year == tomorrow.year && date.month == tomorrow.month && date.day == tomorrow.day) {
+    } else if (date.year == tomorrow.year &&
+        date.month == tomorrow.month &&
+        date.day == tomorrow.day) {
       return 'Demà';
     } else {
       return DateFormat('dd MMM.yyyy', 'ca_ES').format(date);
     }
   }
 
-  void _toggleParticipant(int idAvis, int idUsuari, bool isCurrentlyParticipating) async {
+  void _toggleParticipant(
+      int idAvis, int idUsuari, bool isCurrentlyParticipating) async {
     try {
       http.Response response;
       if (isCurrentlyParticipating) {
@@ -112,19 +122,27 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isCurrentlyParticipating ? 'T\'has desapuntat correctament!' : 'T\'has apuntat correctament!')),
+          SnackBar(
+              content: Text(isCurrentlyParticipating
+                  ? 'T\'has desapuntat correctament!'
+                  : 'T\'has apuntat correctament!')),
         );
         _fetchAvisos(); // Recarregar els avisos per actualitzar la UI
       } else {
         final errorBody = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${errorBody['message'] ?? 'Error desconegut'}')),
+          SnackBar(
+              content:
+                  Text('Error: ${errorBody['message'] ?? 'Error desconegut'}')),
         );
-        print('Error en la operació de participar: ${response.statusCode} - ${response.body}');
+        print(
+            'Error en la operació de participar: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No s\'ha pogut connectar per gestionar la participació.')),
+        SnackBar(
+            content: Text(
+                'No s\'ha pogut connectar per gestionar la participació.')),
       );
       print('Excepció en la operació de participar: $e');
     }
@@ -133,24 +151,27 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
   // NOVA FUNCIÓ: Mostrar diàleg de confirmació i eliminar avís
   Future<void> _confirmAndDeleteAvis(int idAvis, int idUsuariCreador) async {
     final bool confirm = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirmar Eliminació'),
-          content: const Text('Estàs segur que vols eliminar aquest avís? Aquesta acció és irreversible.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel·lar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
-    ) ?? false; // Retorna false si el diàleg es tanca sense selecció
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirmar Eliminació'),
+              content: const Text(
+                  'Estàs segur que vols eliminar aquest avís? Aquesta acció és irreversible.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel·lar'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Eliminar',
+                      style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false; // Retorna false si el diàleg es tanca sense selecció
 
     if (confirm) {
       try {
@@ -167,19 +188,22 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
         } else {
           final errorBody = json.decode(response.body);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${errorBody['message'] ?? 'Error desconegut'}')),
+            SnackBar(
+                content: Text(
+                    'Error: ${errorBody['message'] ?? 'Error desconegut'}')),
           );
-          print('Error al eliminar avís: ${response.statusCode} - ${response.body}');
+          print(
+              'Error al eliminar avís: ${response.statusCode} - ${response.body}');
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No s\'ha pogut connectar per eliminar l\'avís.')),
+          SnackBar(
+              content: Text('No s\'ha pogut connectar per eliminar l\'avís.')),
         );
         print('Excepció al eliminar avís: $e');
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +225,8 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
                 backgroundColor: Colors.lightGreenAccent,
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
               ),
               icon: const Icon(Icons.campaign),
               label: const Text("AVISA!"),
@@ -217,22 +242,26 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('Agenda', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const Text('Agenda',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           Expanded(
             child: _avisos.isEmpty
-                ? const Center(child: Text('No hi ha avisos futurs disponibles.'))
+                ? const Center(
+                    child: Text('No hi ha avisos futurs disponibles.'))
                 : ListView.separated(
                     itemCount: _avisos.length,
                     separatorBuilder: (context, index) => const Divider(),
                     itemBuilder: (context, index) {
                       final av = _avisos[index];
                       final idAvis = av['id_avis'] as int;
-                      final idUsuariCreadorAvis = av['id_usuari_creador'] as int;
+                      final idUsuariCreadorAvis =
+                          av['id_usuari_creador'] as int;
                       final dataAvis = av['data_avis'] as String;
                       final horaAvis = av['hora_avis'] as String?;
                       final tipusApat = av['tipus_apat'] as String;
-                      final usuarisParticipants = av['usuaris_participants'] as List<dynamic>;
+                      final usuarisParticipants =
+                          av['usuaris_participants'] as List<dynamic>;
 
                       final isParticipating = usuarisParticipants.any(
                         (p) => p['id_usuari'] == _currentUserId,
@@ -242,11 +271,13 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
                           .map((p) => p['nom_usuari_participant'] as String)
                           .whereType<String>()
                           .toList();
-                      
-                      final isCurrentUserCreator = _currentUserId == idUsuariCreadorAvis;
+
+                      final isCurrentUserCreator =
+                          _currentUserId == idUsuariCreadorAvis;
 
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -257,17 +288,41 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
                                   // Assegura que el text principal també contrasti
                                   Text(
                                     _formatDate(dataAvis),
-                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), // Color ajustat
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white), // Color ajustat
                                   ),
                                   Text(
-                                    '${tipusApat.capitalize()}' + (horaAvis != null ? ' a les ${horaAvis.substring(0, 5)}' : ''),
-                                    style: const TextStyle(fontSize: 16, color: Colors.white70), // Color ajustat
+                                    '${tipusApat.capitalize()}' +
+                                        (horaAvis != null
+                                            ? ' a les ${horaAvis.substring(0, 5)}'
+                                            : ''),
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white70), // Color ajustat
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'Creat per: ${av['nom_usuari_creador']}',
-                                    style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.white60), // Color ajustat
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic,
+                                        color: Colors.white60),
                                   ),
+                                  // Mostrar "Nota: missatge" si existe
+                                  if (av['missatge'] != null && (av['missatge'] as String).trim().isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2.0),
+                                      child: Text(
+                                        'Nota: ${av['missatge']}',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.amber,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ),
                                   // --- INICI DELS CANVIS PER ALS PARTICIPANTS ---
                                   if (participantNames.isNotEmpty)
                                     Padding(
@@ -275,14 +330,19 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
                                       child: RichText(
                                         text: TextSpan(
                                           text: 'S\'hi ha apuntat: ',
-                                          style: const TextStyle(fontSize: 14, color: Colors.white), // **COLOR AJUSTAT**
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors
+                                                  .white), // **COLOR AJUSTAT**
                                           children: <TextSpan>[
                                             TextSpan(
                                               text: participantNames.join(', '),
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.lightBlueAccent, // Un blau clar pot destacar molt bé!
-                                                fontSize: 15, // Una mica més gran
+                                                color: Colors
+                                                    .lightBlueAccent, // Un blau clar pot destacar molt bé!
+                                                fontSize:
+                                                    15, // Una mica més gran
                                               ),
                                             ),
                                           ],
@@ -295,7 +355,8 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
                                       Checkbox(
                                         value: isParticipating,
                                         onChanged: (bool? newValue) {
-                                          _toggleParticipant(idAvis, _currentUserId!, isParticipating);
+                                          _toggleParticipant(idAvis,
+                                              _currentUserId!, isParticipating);
                                         },
                                       ),
                                       const Text('Hi vull anar!'),
@@ -306,9 +367,11 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
                             ),
                             if (isCurrentUserCreator) // Només mostrar la paperera si és el creador
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
-                                  _confirmAndDeleteAvis(idAvis, _currentUserId!);
+                                  _confirmAndDeleteAvis(
+                                      idAvis, _currentUserId!);
                                 },
                               ),
                           ],
@@ -324,7 +387,7 @@ class _NewMealAdvertisePageState extends State<NewMealAdvertisePage> {
 }
 
 extension StringExtension on String {
-    String capitalize() {
-      return "${this[0].toUpperCase()}${substring(1)}";
-    }
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
+  }
 }
