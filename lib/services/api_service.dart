@@ -6,21 +6,21 @@ import 'dart:io';
 
 class ApiService {
   // ------------------------------- API PRO -------------------------------
-  static String apiUrl = "https://polgussi.cat:3001"; //                 |
+  //static String apiUrl = "https://polgussi.cat:3001"; //                 |
   // -----------------------------------------------------------------------
 
   // ------------------------------- API DEV -------------------------------
-  //static String apiUrl = "https://polgussi.cat:4001"; //                   |
+  static String apiUrl = "https://polgussi.cat:4001"; //                   |
   // -----------------------------------------------------------------------
 
   void initState() {
     if (!kIsWeb) {
       // ------------------------------- API PRO -------------------------------
-      apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
+      //apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
       // -----------------------------------------------------------------------
 
       // ------------------------------- API DEV -------------------------------
-      //apiUrl = 'http://polgussi.cat:4000'; //                                  |
+      apiUrl = 'http://polgussi.cat:4000'; //                                  |
       // -----------------------------------------------------------------------
     }
   }
@@ -144,6 +144,18 @@ class ApiService {
       return nom;
     } else {
       throw Exception("Error carregant nom d'usuari");
+    }
+  }
+
+  static Future<String> getUserEstat(String userName) async {
+    final response =
+        await http.get(Uri.parse('$apiUrl/usuari/$userName/estat'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      String estat = data[0]['estat'];
+      return estat;
+    } else {
+      throw Exception("Error carregant estat de l'usuari");
     }
   }
 
@@ -495,6 +507,19 @@ class ApiService {
     return response;
   }
 
+  static Future<http.Response> editarEstatUsuari(
+      int? userId, String estatNou) async {
+    final response =
+        await http.post(Uri.parse('$apiUrl/usuari/$userId/edita-estat'),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: json.encode(
+              {'estat': estatNou},
+            ));
+    return response;
+  }
+
   // Funció per crear un nou avís (POST /avisos/nou)
   static Future<http.Response> crearNouAvis({
     required int idUsuariCreador,
@@ -604,6 +629,116 @@ class ApiService {
       print('Error al obtenir avisos futurs: $e');
       throw Exception(
           'No s\'ha pogut connectar amb l\'API per obtenir els avisos.');
+    }
+  }
+
+  // --- COL·LECCIONABLE DE CARTES ---
+
+  /// Obté la quantitat de sobres que té un usuari.
+  static Future<Map<String, dynamic>> getSobresUsuari(String usuariId) async {
+    // Nota: L'ID de l'usuari l'has de guardar després de fer login.
+    final url = Uri.parse('$apiUrl/sobres/meu/$usuariId');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        // Retorna un JSON com: { "quantitat": 5 }
+        return json.decode(response.body);
+      } else {
+        throw Exception('Error carregant el recompte de sobres');
+      }
+    } catch (e) {
+      throw Exception('Error en la connexió amb l\'API: $e');
+    }
+  }
+
+  /// Obté la llista completa de cartes que té un usuari.
+  static Future<List<dynamic>> getMevaColleccio(String usuariId) async {
+    final url = Uri.parse('$apiUrl/cartes/meva/$usuariId');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        // Retorna un JSON com: [ { "carta_id": 1, "titol": "...", ... }, ... ]
+        return json.decode(response.body);
+      } else {
+        throw Exception('Error carregant la col·lecció de cartes');
+      }
+    } catch (e) {
+      throw Exception('Error en la connexió amb l\'API: $e');
+    }
+  }
+
+  /// Envia la petició per obrir un sobre.
+  /// Retorna la llista de cartes que han sortit.
+  static Future<List<dynamic>> obrirSobre(String usuariId) async {
+    final url = Uri.parse('$apiUrl/sobres/obrir');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'usuari_id': usuariId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Retorna la llista de cartes noves: [ { "carta_id": 5, "titol": "..." }, ... ]
+        return json.decode(response.body);
+      } else {
+        // Gestionem errors com "No et queden sobres"
+        final errorBody = json.decode(response.body);
+        throw Exception(
+            errorBody['message'] ?? 'Error desconegut obrint el sobre');
+      }
+    } catch (e) {
+      throw Exception('Error en la connexió amb l\'API: $e');
+    }
+  }
+
+  /// Marca una llista de cartes com a "vistes" (es_nova = 0).
+  static Future<Map<String, dynamic>> marcarCartesVistes(
+      String usuariId, List<int> cartaIds) async {
+    final url = Uri.parse('$apiUrl/cartes/marcar-vista');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'usuari_id': usuariId,
+          'carta_ids': cartaIds,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Error marcant les cartes com a vistes');
+      }
+    } catch (e) {
+      throw Exception('Error en la connexió amb l\'API: $e');
+    }
+  }
+
+  /// Obté l'estat complet de la col·lecció (totes les cartes + estat 'owned').
+  static Future<List<dynamic>> getEstatColleccio(String usuariId) async {
+    final url = Uri.parse('$apiUrl/cartes/estat-colleccio/$usuariId');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        // Retorna la llista de TOTES les cartes (ex: 30)
+        // [ { "carta_id": 1, "titol": "...", "is_owned": 1, "es_nova": 0 }, ... ]
+        return json.decode(response.body);
+      } else {
+        throw Exception('Error carregant l\'estat de la col·lecció');
+      }
+    } catch (e) {
+      throw Exception('Error en la connexió amb l\'API: $e');
     }
   }
 }

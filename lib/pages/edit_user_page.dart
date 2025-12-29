@@ -16,6 +16,7 @@ class EditUserPage extends StatefulWidget {
 
 class _EditUserPageState extends State<EditUserPage> {
   late TextEditingController _nameController;
+  late TextEditingController _estatController;
   late Uint8List? _profileImage;
   late int? _userId;
   bool _isLoading = true;
@@ -32,16 +33,19 @@ class _EditUserPageState extends State<EditUserPage> {
   Future<void> _loadUserProfile(UserProvider userProvider) async {
     try {
       // Espera que el provider carregui les dades de l'usuari
-      await userProvider.getUserInfo(); // Si tens una funció per carregar les dades
-      
+      await userProvider
+          .getUserInfo(); // Si tens una funció per carregar les dades
+
       //final nom = userProvider.nom;
       _userId = userProvider.id;
-      final nom = await  ApiService.getUserName(_userId!);
+      final nom = await ApiService.getUserName(_userId!);
+      final estat = await ApiService.getUserEstat(nom!);
 
       // Carregar la imatge de perfil
       await _loadUserProfileImage(nom.toString());
       //_nameController = TextEditingController(text: userProvider.nom);
       _nameController = TextEditingController(text: nom);
+      _estatController = TextEditingController(text: estat);
     } catch (e) {
       print("Error al carregar les dades de l'usuari: $e");
     }
@@ -145,25 +149,32 @@ class _EditUserPageState extends State<EditUserPage> {
   }
 
   Future<void> _uploadImage(File imageFile, String userName) async {
-    final response = await ApiService.uploadUserProfileImage(imageFile, userName);
+    final response =
+        await ApiService.uploadUserProfileImage(imageFile, userName);
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Imatge pujada correctament!')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Imatge pujada correctament!')));
       // Actualitzar la pàgina per carregar la nova imatge
       setState(() {
         _isLoading = true; // Inicia la càrrega
       });
-      await _loadUserProfile(Provider.of<UserProvider>(context, listen: false)); // Tornar a carregar les dades de l'usuari
+      await _loadUserProfile(Provider.of<UserProvider>(context,
+          listen: false)); // Tornar a carregar les dades de l'usuari
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al pujar la imatge')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error al pujar la imatge')));
     }
   }
 
   Future<void> _uploadImageWeb(Uint8List imageBytes, String userName) async {
-    final response = await ApiService.uploadUserProfileImage(imageBytes, userName);
+    final response =
+        await ApiService.uploadUserProfileImage(imageBytes, userName);
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Imatge pujada correctament!')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Imatge pujada correctament!')));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al pujar la imatge')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error al pujar la imatge')));
     }
   }
 
@@ -187,18 +198,72 @@ class _EditUserPageState extends State<EditUserPage> {
             TextButton(
               onPressed: () async {
                 // Guarda el nou nom si cal
-                final userProvider = Provider.of<UserProvider>(context, listen: false);
-                final statusCode = await ApiService.editarNomUsuari(_userId, _nameController.text);
-                if( statusCode.statusCode == 200){
+                final userProvider =
+                    Provider.of<UserProvider>(context, listen: false);
+                final statusCode = await ApiService.editarNomUsuari(
+                    _userId, _nameController.text);
+                if (statusCode.statusCode == 200) {
                   await userProvider.saveUser(
                     _nameController.text,
                     userProvider.usuari.toString(),
+                    userProvider.estat.toString(),
                     userProvider.id,
                     userProvider.token.toString(),
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Nom canviat correctament!')));
-                }else{
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al canviar el nom :(')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Nom canviat correctament!')));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al canviar el nom :(')));
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _editEstat() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Edita l'estat"),
+          content: TextField(
+            controller: _estatController,
+            decoration: InputDecoration(labelText: 'Estat'),
+            maxLength: 200,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tanca el diàleg
+              },
+              child: Text('Cancel·lar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Guarda el nou nom si cal
+                final userProvider =
+                    Provider.of<UserProvider>(context, listen: false);
+                final statusCode = await ApiService.editarEstatUsuari(
+                    _userId, _estatController.text);
+                if (statusCode.statusCode == 200) {
+                  await userProvider.saveUser(
+                    _estatController.text,
+                    userProvider.usuari.toString(),
+                    userProvider.estat.toString(),
+                    userProvider.id,
+                    userProvider.token.toString(),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Estat canviat correctament!')));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error al canviar l'estat :(")));
                 }
                 Navigator.of(context).pop();
               },
@@ -239,7 +304,8 @@ class _EditUserPageState extends State<EditUserPage> {
                       )
                     : CircleAvatar(
                         radius: 50,
-                        child: Image.asset('assets/images/avatar_placeholder.png'),
+                        child:
+                            Image.asset('assets/images/avatar_placeholder.png'),
                       ),
                 Positioned(
                   bottom: 0,
@@ -270,7 +336,8 @@ class _EditUserPageState extends State<EditUserPage> {
                 ),
                 Text("Nom",
                     style: TextStyle(
-                        color: Color.fromARGB(186, 207, 207, 207), fontSize: 16)),
+                        color: Color.fromARGB(186, 207, 207, 207),
+                        fontSize: 16)),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -280,18 +347,42 @@ class _EditUserPageState extends State<EditUserPage> {
                 ),
               ],
             ),
+            // Edita l'estat
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: () {
+                    _editEstat();
+                  },
+                ),
+                Text("Estat",
+                    style: TextStyle(
+                        color: Color.fromARGB(186, 207, 207, 207),
+                        fontSize: 16)),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _estatController.text,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
             Spacer(), // Espai flexible per empènyer el botó cap a la part inferior
             Center(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: Colors.redAccent, // Color del text/icona
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.redAccent, // Color del text/icona
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
                 icon: Icon(Icons.logout),
                 label: Text("Tancar sessió"),
                 onPressed: () {
                   userProvider.logout();
-                  Navigator.of(context).pushReplacementNamed('/login'); // Exemple de redirecció
+                  Navigator.of(context)
+                      .pushReplacementNamed('/login'); // Exemple de redirecció
                 },
               ),
             ),
@@ -300,5 +391,4 @@ class _EditUserPageState extends State<EditUserPage> {
       ),
     );
   }
-
 }

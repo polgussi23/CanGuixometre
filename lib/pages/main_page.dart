@@ -6,6 +6,8 @@ import '../services/api_service.dart';
 import 'ranking_page.dart';
 import 'photo_gallery_page.dart';
 import 'history_page.dart';
+import 'collection_page.dart';
+import '../icons/my_custom_icons_icons.dart';
 //import 'edit_user_page.dart';
 
 class MainPage extends StatefulWidget {
@@ -20,6 +22,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = [
     RankingPage(),
     PhotoGalleryPage(),
+    CollectionPage(),
     HistoryPage(),
     NewMealAdvertisePage(),
   ];
@@ -119,6 +122,8 @@ class _MainPageState extends State<MainPage> {
             BottomNavigationBarItem(
                 icon: Icon(Icons.leaderboard), label: 'Ranking'),
             BottomNavigationBarItem(icon: Icon(Icons.image), label: 'Galeria'),
+            BottomNavigationBarItem(
+                icon: Icon(MyCustomIcons.cardicon), label: 'Àlbum'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.menu_book), label: 'Història'),
             BottomNavigationBarItem(

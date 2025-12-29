@@ -26,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
         await userProvider.saveUser(
           response['user']['nom'],
           response['user']['usuari'],
+          response['user']['estat'],
           response['user']['id'],
           response['token'],
         );
@@ -54,13 +55,16 @@ class _LoginPageState extends State<LoginPage> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 16.0),
-            Image.asset('assets/images/trust.png', height: 100), // Assegura’t de tenir la imatge a la carpeta assets
+            Image.asset('assets/images/trust.png',
+                height:
+                    100), // Assegura’t de tenir la imatge a la carpeta assets
           ],
         ),
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: Colors.black, backgroundColor: Colors.yellow,
+              foregroundColor: Colors.black,
+              backgroundColor: Colors.yellow,
             ),
             onPressed: () => Navigator.of(context).pop(),
             child: Text('D\'acord'),
@@ -106,7 +110,8 @@ class _LoginPageState extends State<LoginPage> {
                 ? CircularProgressIndicator()
                 : ElevatedButton(
                     style: TextButton.styleFrom(
-                      foregroundColor: Colors.black, backgroundColor: Colors.yellow,
+                      foregroundColor: Colors.black,
+                      backgroundColor: Colors.yellow,
                     ),
                     onPressed: _login,
                     child: Text('Entra'),
