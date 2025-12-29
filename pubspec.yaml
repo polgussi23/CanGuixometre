@@ -55,6 +55,7 @@ dependencies:
   animated_flip_card: ^1.0.2
   flip_card: ^0.7.0
   webview_flutter: ^4.13.0
+  animate_do: ^4.2.0
 
 dev_dependencies:
   flutter_test:
