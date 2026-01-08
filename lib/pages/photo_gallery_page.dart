@@ -22,16 +22,57 @@ class PhotoGalleryPage extends StatefulWidget {
 class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
   final List<ImageData> uploadedImages = [];
   dynamic _selectedImage;
-  bool isLoading = false;  // Indica si estem carregant imatges
-  int currentPage = 1;  // Pàgina actual de la paginació
+  bool isLoading = false; // Indica si estem carregant imatges
+  int currentPage = 1; // Pàgina actual de la paginació
   int imagesPerPage = 16;
   List<int> imagesNoScore = [];
-  
+  DateTime? _startDate;
+  DateTime? _endDate;
+  bool _isLoadingDates = true;
+
   @override
   void initState() {
     super.initState();
-    _loadImages();  // Carregar les primeres imatges al iniciar la pàgina
+    _loadImages(); // Carregar les primeres imatges al iniciar la pàgina
     _imatgesSensePuntuacio();
+    _fetchDates();
+  }
+
+  Future<void> _fetchDates() async {
+    try {
+      // Aquí crides a les teves funcions de l'API
+      // Poso un exemple genèric, adapta-ho al teu ApiService
+      var startResponse = await ApiService.getStartDate();
+      var endResponse = await ApiService.getEndDate();
+
+      // Assumint que l'API et retorna un String tipus "2023-10-25" o un DateTime
+      setState(() {
+        // Assegura't de convertir el string a DateTime si cal
+        _startDate = DateTime.parse(startResponse[0]['date']);
+        _endDate = DateTime.parse(endResponse[0]['date']);
+        _isLoadingDates = false;
+      });
+    } catch (e) {
+      print("Error carregant dates: $e");
+      // En cas d'error, potser vols permetre pujar igualment o bloquejar
+      setState(() => _isLoadingDates = false);
+    }
+  }
+
+  bool get _isUploadEnabled {
+    // Si encara estan carregant les dates, bloquegem per seguretat
+    if (_isLoadingDates || _startDate == null || _endDate == null) return false;
+
+    final now = DateTime.now();
+
+    // 1. Si la data d'inici és futura (és més gran que ara) -> Bloquejat
+    if (_startDate!.isAfter(now)) return false;
+
+    // 2. Si la data final ja ha passat (és més petita que ara) -> Bloquejat
+    if (_endDate!.isBefore(now)) return false;
+
+    // Si passa els filtres, està actiu
+    return true;
   }
 
   Future<void> _loadImages() async {
@@ -40,7 +81,8 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
     });
 
     try {
-      List<ImageData> newImages =  await ApiService.getImages(currentPage, imagesPerPage);
+      List<ImageData> newImages =
+          await ApiService.getImages(currentPage, imagesPerPage);
       //<Uint8List> newImages = await ApiService.getImages(currentPage, 5); // Funció per obtenir imatges
       setState(() {
         uploadedImages.addAll(newImages);
@@ -53,7 +95,7 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
       });
     }
   }
-  
+
   void showImageSourceOptions() async {
     final ImageSource? source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -80,29 +122,31 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
       final pickedFile = await ImagePicker().pickImage(source: source);
       if (pickedFile != null) {
         setState(() {
-          if(!kIsWeb){
+          if (!kIsWeb) {
             _selectedImage = File(pickedFile.path);
-          }else{
+          } else {
             _selectedImage = pickedFile.readAsBytes();
           }
         });
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => UploadPhotoPage(selectedImage: _selectedImage),
+            builder: (context) =>
+                UploadPhotoPage(selectedImage: _selectedImage),
           ),
         );
       }
     }
   }
 
-  Future<void> _imatgesSensePuntuacio() async{
+  Future<void> _imatgesSensePuntuacio() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     //int n;
     await userProvider.getUserInfo();
-    List<dynamic> response = await ApiService.getNonScoreImagesUser(userProvider.id);
+    List<dynamic> response =
+        await ApiService.getNonScoreImagesUser(userProvider.id);
     //nImgesNoScore = response.length;
-    for(var imatges in response){
+    for (var imatges in response) {
       //print(imatges);
       imagesNoScore.add(imatges['imatge_id']);
     }
@@ -230,8 +274,7 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             SizedBox(
-                              height:
-                                  MediaQuery.of(context).size.width * 0.4,
+                              height: MediaQuery.of(context).size.width * 0.4,
                               width: MediaQuery.of(context).size.width * 0.4,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
@@ -244,8 +287,8 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
                             SizedBox(height: 6),
                             Text(
                               formattedDate,
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey),
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -274,12 +317,16 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
                   ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showImageSourceOptions(),
-        tooltip: 'Pujar Imatge',
-        backgroundColor: Color.fromARGB(255, 251, 255, 0),
+        onPressed: _isUploadEnabled ? () => showImageSourceOptions() : null,
+        tooltip: _isUploadEnabled ? 'Pujar Imatge' : 'Fora de termini',
+
+        backgroundColor: _isUploadEnabled
+            ? const Color.fromARGB(255, 251, 255, 0)
+            : Colors.grey[400], // Un gris apagat
+
         child: Icon(
           Icons.upload_file,
-          color: Colors.black,
+          color: _isUploadEnabled ? Colors.black : Colors.white70,
         ),
       ),
     );

@@ -6,21 +6,21 @@ import 'dart:io';
 
 class ApiService {
   // ------------------------------- API PRO -------------------------------
-  //static String apiUrl = "https://polgussi.cat:3001"; //                 |
+  static String apiUrl = "https://polgussi.cat:3001"; //                 |
   // -----------------------------------------------------------------------
 
   // ------------------------------- API DEV -------------------------------
-  static String apiUrl = "https://polgussi.cat:4001"; //                   |
+  //static String apiUrl = "https://polgussi.cat:4001"; //                   |
   // -----------------------------------------------------------------------
 
   void initState() {
     if (!kIsWeb) {
       // ------------------------------- API PRO -------------------------------
-      //apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
+      apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
       // -----------------------------------------------------------------------
 
       // ------------------------------- API DEV -------------------------------
-      apiUrl = 'http://polgussi.cat:4000'; //                                  |
+      //apiUrl = 'http://polgussi.cat:4000'; //                                  |
       // -----------------------------------------------------------------------
     }
   }
@@ -104,6 +104,15 @@ class ApiService {
       return json.decode(response.body);
     } else {
       throw Exception('Error carregant la data de finalització');
+    }
+  }
+
+  static Future<List<dynamic>> getStartDate() async {
+    final response = await http.get(Uri.parse('$apiUrl/startDate'));
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception("Error carregant la data d'inici");
     }
   }
 
@@ -379,7 +388,7 @@ class ApiService {
     }
   }
 
-  static Future<void> updateScoreUserImage(
+  static Future<Map<String, dynamic>> updateScoreUserImage(
       String usuari, List<String> puntuacions, String nomImg) async {
     final response = await http.post(
       Uri.parse('$apiUrl/scores/update-user'),
@@ -393,7 +402,10 @@ class ApiService {
       }),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      // AQUÍ ESTÀ LA CLAU: Retornem el cos de la resposta descodificat
+      return json.decode(response.body);
+    } else {
       throw Exception(
           'Error actualitzant les puntuacions: ${response.statusCode}');
     }

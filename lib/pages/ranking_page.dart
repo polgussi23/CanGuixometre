@@ -21,6 +21,7 @@ class _RankingPageState extends State<RankingPage> {
   List<dynamic> usuarisBonus = [];
   Map<String, Uint8List> userProfileImages = {};
   DateTime? endDate;
+  DateTime? startDate;
 
   @override
   void initState() {
@@ -33,6 +34,7 @@ class _RankingPageState extends State<RankingPage> {
       fetchRankings(),
       fetchUserProfileImages(),
       getEndDate(),
+      getStartDate(),
     ]);
   }
 
@@ -78,9 +80,25 @@ class _RankingPageState extends State<RankingPage> {
     }
   }
 
+  Future<void> getStartDate() async {
+    try {
+      List<dynamic> data = await ApiService.getStartDate();
+      if (data.isNotEmpty && mounted) {
+        setState(() {
+          startDate = DateTime.parse(data[0]['date']);
+        });
+      }
+    } catch (e) {
+      print('Error data inici: $e');
+    }
+  }
+
   String _titleText() {
-    if (endDate == null) return 'RÀNQUING CAN GUIX';
-    final difference = endDate!.difference(DateTime.now());
+    DateTime avui = DateTime.now();
+    if (endDate == null && startDate == null) return 'RÀNQUING CAN GUIX';
+    if (startDate!.difference(avui) > Duration(days: 0))
+      return 'Queden ${startDate!.difference(avui).inDays} dies per començar';
+    final difference = endDate!.difference(avui);
     if (difference.isNegative) return '🏆 FINALITZAT 🏆';
     return 'Queden ${difference.inDays} dies';
   }
@@ -246,20 +264,27 @@ class _RankingPageState extends State<RankingPage> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final actualIndex = index + 3;
-                          return FadeInLeft(
-                            duration: const Duration(milliseconds: 500),
-                            delay: Duration(milliseconds: index * 100),
-                            child: RankingTile(
-                              user: rankings[actualIndex],
-                              index: actualIndex,
-                              imageBytes: userProfileImages[
-                                  rankings[actualIndex]['nom']],
-                              medals: _getMedalsForUser(
-                                  rankings[actualIndex]['nom']),
-                              onImageTap: _showLargeImage,
-                              onMedalTap: _showMedalPopup,
-                            ),
+                          bool shouldAnimate = index < 6;
+
+                          Widget tile = RankingTile(
+                            user: rankings[actualIndex],
+                            index: actualIndex,
+                            imageBytes:
+                                userProfileImages[rankings[actualIndex]['nom']],
+                            medals:
+                                _getMedalsForUser(rankings[actualIndex]['nom']),
+                            onImageTap: _showLargeImage,
+                            onMedalTap: _showMedalPopup,
                           );
+                          if (shouldAnimate) {
+                            return FadeInLeft(
+                              duration: const Duration(milliseconds: 500),
+                              delay: Duration(milliseconds: index * 50),
+                              child: tile,
+                            );
+                          } else {
+                            return tile;
+                          }
                         },
                         childCount:
                             rankings.length > 3 ? rankings.length - 3 : 0,
