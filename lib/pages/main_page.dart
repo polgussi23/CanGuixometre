@@ -28,7 +28,7 @@ class _MainPageState extends State<MainPage> {
   ];
 
   // Versió actual de l'app
-  final currentVersion = "1.3.2"; // VERSIÓ ACTUAL APP
+  final currentVersion = "2.0.2"; // VERSIÓ ACTUAL APP
 
   final ApiService _apiService = ApiService(); // Instància de ApiService
 

@@ -45,6 +45,86 @@ class HistoryPage extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20),
+            // Guanyador de l'any 2024-2025
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.amber[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.amber, width: 2),
+              ),
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Tanca si cliques fora
+                        barrierColor: Colors.black
+                            .withOpacity(0.6), // Fons enfosquit (60% opacitat)
+                        builder: (BuildContext context) {
+                          return Dialog(
+                            backgroundColor: Colors
+                                .transparent, // Treiem el fons blanc del diàleg
+                            insetPadding: const EdgeInsets.all(
+                                10), // Marge per no tocar les vores
+                            child: GestureDetector(
+                              // Això permet tancar també si cliques la mateixa foto
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Hero(
+                                tag: 'foto_guanyador',
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                      16), // Opcional: vores rodones a la foto gran
+                                  child: Image.asset(
+                                    'assets/images/24-25.jpeg',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Hero(
+                      tag: 'foto_guanyador', // Recorda: mateix tag que a dalt
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundImage: AssetImage('assets/images/24-25.jpeg'),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "🏆 Arnau",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber[900],
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "2024 - 2025",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "88.95 punts",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
             // Guanyador de l'any 2023-2024
             Container(
               decoration: BoxDecoration(
@@ -55,9 +135,45 @@ class HistoryPage extends StatelessWidget {
               padding: EdgeInsets.all(16),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 80,
-                    backgroundImage: AssetImage('assets/images/23-24.jpeg'), // Ruta de la imatge del guanyador
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Tanca si cliques fora
+                        barrierColor: Colors.black
+                            .withOpacity(0.6), // Fons enfosquit (60% opacitat)
+                        builder: (BuildContext context) {
+                          return Dialog(
+                            backgroundColor: Colors
+                                .transparent, // Treiem el fons blanc del diàleg
+                            insetPadding: const EdgeInsets.all(
+                                10), // Marge per no tocar les vores
+                            child: GestureDetector(
+                              // Això permet tancar també si cliques la mateixa foto
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Hero(
+                                tag: 'foto_guanyador',
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                      16), // Opcional: vores rodones a la foto gran
+                                  child: Image.asset(
+                                    'assets/images/23-24.jpeg',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Hero(
+                      tag: 'foto_guanyador', // Recorda: mateix tag que a dalt
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundImage: AssetImage('assets/images/23-24.jpeg'),
+                      ),
+                    ),
                   ),
                   SizedBox(height: 16),
                   Text(

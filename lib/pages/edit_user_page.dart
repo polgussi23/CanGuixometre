@@ -1,11 +1,13 @@
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
+//import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:can_guix/services/api_service.dart';
 import 'package:can_guix/services/user_provider.dart';
+import 'package:can_guix/pages/crop_scree.dart';
 
 class EditUserPage extends StatefulWidget {
   const EditUserPage({Key? key}) : super(key: key);
@@ -128,24 +130,32 @@ class _EditUserPageState extends State<EditUserPage> {
   }
 
   Future<File?> _cropImage(File imageFile) async {
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: imageFile.path,
-      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Retalla la imatge',
-          toolbarColor: Colors.grey,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: true,
-        ),
-        IOSUiSettings(
-          title: 'Retalla la imatge',
-          aspectRatioLockEnabled: true,
-        ),
-      ],
+    // 1. Obrim la pantalla de retallar que hem creat
+    final Uint8List? croppedBytes = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CropScreen(imageFile: imageFile),
+      ),
     );
-    return croppedFile != null ? File(croppedFile.path) : null;
+
+    // 2. Si l'usuari cancel·la, tornem null
+    if (croppedBytes == null) {
+      return null;
+    }
+
+    // 3. Convertim els bytes que ens retorna el widget en un FILE
+    // Això és necessari perquè el teu mètode _uploadImage espera un File.
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final destPath =
+          '${tempDir.path}/retallada_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final file = File(destPath);
+      await file.writeAsBytes(croppedBytes);
+      return file;
+    } catch (e) {
+      print("Error guardant la imatge retallada: $e");
+      return null;
+    }
   }
 
   Future<void> _uploadImage(File imageFile, String userName) async {

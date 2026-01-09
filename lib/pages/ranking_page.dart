@@ -94,12 +94,41 @@ class _RankingPageState extends State<RankingPage> {
   }
 
   String _titleText() {
-    DateTime avui = DateTime.now();
+    DateTime now = DateTime.now();
+    // Aquesta és la clau: Creem una data que és AVUI però a les 00:00:00
+    DateTime avuiSenseHores = DateTime(now.year, now.month, now.day);
+
+    // També ens assegurem que la data d'inici no tingui hores (per si de cas)
+    DateTime iniciSenseHores =
+        DateTime(startDate!.year, startDate!.month, startDate!.day);
+
     if (endDate == null && startDate == null) return 'RÀNQUING CAN GUIX';
-    if (startDate!.difference(avui) > Duration(days: 0))
-      return 'Queden ${startDate!.difference(avui).inDays} dies per començar';
-    final difference = endDate!.difference(avui);
+
+    // Càlcul per saber quan comença
+    if (iniciSenseHores.isAfter(avuiSenseHores)) {
+      final dies = iniciSenseHores.difference(avuiSenseHores).inDays;
+      if (dies == 1) {
+        return 'Comença demà!'; // Queda més maco que "Queda 1 dies"
+      }
+      return 'Queden $dies dies per començar';
+    }
+
+    // Si avui és el mateix dia que l'inici
+    if (iniciSenseHores.isAtSameMomentAs(avuiSenseHores)) {
+      return '✨ COMENÇA AVUI! ✨';
+    }
+
+    // Càlcul per saber quan acaba (si ja ha començat)
+    DateTime fiSenseHores =
+        DateTime(endDate!.year, endDate!.month, endDate!.day);
+    final difference = fiSenseHores.difference(avuiSenseHores);
+
     if (difference.isNegative) return '🏆 FINALITZAT 🏆';
+
+    // Per als dies que queden de temporada
+    if (difference.inDays == 0) {
+      return 'Últim dia!';
+    }
     return 'Queden ${difference.inDays} dies';
   }
 
