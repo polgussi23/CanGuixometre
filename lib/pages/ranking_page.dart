@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'package:can_guix/pages/jocs_page.dart';
+import 'package:can_guix/widgets/ranking_popup_button.dart';
 import 'package:can_guix/widgets/smart_image_dialog.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
@@ -195,15 +197,8 @@ class _RankingPageState extends State<RankingPage> {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const EditUserPage()),
-              );
-              _refreshData();
-            },
+          RankingPopupButton(
+            onRefreshNeeded: _refreshData,
           ),
         ],
       ),

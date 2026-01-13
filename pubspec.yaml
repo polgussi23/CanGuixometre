@@ -84,6 +84,7 @@ flutter:
   assets:
     - assets/images/
     - assets/animations/
+    - assets/images/jocs/buscaAlls/
   
   fonts:
     - family: MyCustomIcons
