@@ -99,10 +99,11 @@ class _RankingPageState extends State<RankingPage> {
     DateTime avuiSenseHores = DateTime(now.year, now.month, now.day);
 
     // També ens assegurem que la data d'inici no tingui hores (per si de cas)
-    DateTime iniciSenseHores =
-        DateTime(startDate!.year, startDate!.month, startDate!.day);
 
     if (endDate == null && startDate == null) return 'RÀNQUING CAN GUIX';
+
+    DateTime iniciSenseHores =
+        DateTime(startDate!.year, startDate!.month, startDate!.day);
 
     // Càlcul per saber quan comença
     if (iniciSenseHores.isAfter(avuiSenseHores)) {
