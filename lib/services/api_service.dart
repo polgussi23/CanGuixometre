@@ -6,21 +6,21 @@ import 'dart:io';
 
 class ApiService {
   // ------------------------------- API PRO -------------------------------
-  //static String apiUrl = "https://polgussi.cat:3001"; //                 |
+  static String apiUrl = "https://polgussi.cat:3001"; //                 |
   // -----------------------------------------------------------------------
 
   // ------------------------------- API DEV -------------------------------
-  static String apiUrl = "https://polgussi.cat:4001"; //                   |
+  //static String apiUrl = "https://polgussi.cat:4001"; //                   |
   // -----------------------------------------------------------------------
 
   void initState() {
     if (!kIsWeb) {
       // ------------------------------- API PRO -------------------------------
-      //apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
+      apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
       // -----------------------------------------------------------------------
 
       // ------------------------------- API DEV -------------------------------
-      apiUrl = 'http://polgussi.cat:4000'; //                                  |
+      //apiUrl = 'http://polgussi.cat:4000'; //                                  |
       // -----------------------------------------------------------------------
     }
   }
@@ -356,6 +356,62 @@ class ApiService {
           'usuari_id': usuari_id,
           'alias': alias,
           'temps': temps
+        }));
+  }
+
+  static Future<List<Map<String, dynamic>>> getPescaFregitsRanking() async {
+    final response =
+        await http.get(Uri.parse('$apiUrl/jocs/pesca-fregits/ranking'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+
+      return data.map<Map<String, dynamic>>((item) {
+        return {'alias': item['alias'], 'puntuacio': item['puntuacio']};
+      }).toList();
+    } else {
+      throw Exception(
+          'Error carregant les millors puntuacions: ${response.statusCode}');
+    }
+  }
+
+  static Future<void> postResultatPescaFregits(
+      int usuari_id, String alias, int puntuacio) async {
+    final response = await http.post(
+        Uri.parse('$apiUrl/jocs/pesca-fregits/guardar'),
+        headers: <String, String>{'Content-type': 'application/json'},
+        body: jsonEncode(<String, dynamic>{
+          'usuari_id': usuari_id,
+          'alias': alias,
+          'puntuacio': puntuacio
+        }));
+  }
+
+  static Future<List<Map<String, dynamic>>> getSaltCalcotRanking() async {
+    final response =
+        await http.get(Uri.parse('$apiUrl/jocs/salt-calcot/ranking'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+
+      return data.map<Map<String, dynamic>>((item) {
+        return {'alias': item['alias'], 'puntuacio': item['puntuacio']};
+      }).toList();
+    } else {
+      throw Exception(
+          'Error carregant les millors puntuacions: ${response.statusCode}');
+    }
+  }
+
+  static Future<void> postResultatSaltCalcot(
+      int usuari_id, String alias, int puntuacio) async {
+    final response = await http.post(
+        Uri.parse('$apiUrl/jocs/salt-calcot/guardar'),
+        headers: <String, String>{'Content-type': 'application/json'},
+        body: jsonEncode(<String, dynamic>{
+          'usuari_id': usuari_id,
+          'alias': alias,
+          'puntuacio': puntuacio
         }));
   }
 

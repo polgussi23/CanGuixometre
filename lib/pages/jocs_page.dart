@@ -1,4 +1,6 @@
 import 'package:can_guix/pages/jocs/busca_alls_page.dart';
+import 'package:can_guix/pages/jocs/pesca_fregits_page.dart';
+import 'package:can_guix/pages/jocs/salt_calcot_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -27,8 +29,20 @@ class JocsPage extends StatelessWidget {
                 },
                 child: Image.asset('assets/images/jocs/buscaAlls/buscaAlls.png',
                     width: calculWidthImatges(context))),
-            Image.asset('assets/images/jocs/buscaAlls/buscaAlls.png',
-                width: calculWidthImatges(context)),
+            GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => PescaFregitsPage()));
+                },
+                child: Image.asset('assets/images/jocs/pescaFregitsLogo.png',
+                    width: calculWidthImatges(context))),
+            GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SaltCalcotPage()));
+                },
+                child: Image.asset('assets/images/jocs/saltCalcot/saltCalcotLogo.png',
+                    width: calculWidthImatges(context))),
           ],
         ),
       ),
