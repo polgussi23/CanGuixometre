@@ -1,8 +1,8 @@
 import 'dart:typed_data';
+import 'package:can_guix/widgets/ranking_popup_button.dart';
 import 'package:can_guix/widgets/smart_image_dialog.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'edit_user_page.dart';
 import '../widgets/ranking_components.dart';
 import 'package:animate_do/animate_do.dart';
 
@@ -94,44 +94,33 @@ class _RankingPageState extends State<RankingPage> {
   }
 
   String _titleText() {
-    DateTime now = DateTime.now();
-    // Aquesta és la clau: Creem una data que és AVUI però a les 00:00:00
-    DateTime avuiSenseHores = DateTime(now.year, now.month, now.day);
+  DateTime now = DateTime.now();
+  DateTime avuiSenseHores = DateTime(now.year, now.month, now.day);
 
-    // També ens assegurem que la data d'inici no tingui hores (per si de cas)
+  // Retorna si falta qualsevol de les dues dates
+  if (startDate == null || endDate == null) return 'RÀNQUING CAN GUIX';
 
-    if (endDate == null && startDate == null) return 'RÀNQUING CAN GUIX';
+  DateTime iniciSenseHores =
+      DateTime(startDate!.year, startDate!.month, startDate!.day);
 
-    DateTime iniciSenseHores =
-        DateTime(startDate!.year, startDate!.month, startDate!.day);
-
-    // Càlcul per saber quan comença
-    if (iniciSenseHores.isAfter(avuiSenseHores)) {
-      final dies = iniciSenseHores.difference(avuiSenseHores).inDays;
-      if (dies == 1) {
-        return 'Comença demà!'; // Queda més maco que "Queda 1 dies"
-      }
-      return 'Queden $dies dies per començar';
-    }
-
-    // Si avui és el mateix dia que l'inici
-    if (iniciSenseHores.isAtSameMomentAs(avuiSenseHores)) {
-      return '✨ COMENÇA AVUI! ✨';
-    }
-
-    // Càlcul per saber quan acaba (si ja ha començat)
-    DateTime fiSenseHores =
-        DateTime(endDate!.year, endDate!.month, endDate!.day);
-    final difference = fiSenseHores.difference(avuiSenseHores);
-
-    if (difference.isNegative) return '🏆 FINALITZAT 🏆';
-
-    // Per als dies que queden de temporada
-    if (difference.inDays == 0) {
-      return 'Últim dia!';
-    }
-    return 'Queden ${difference.inDays} dies';
+  if (iniciSenseHores.isAfter(avuiSenseHores)) {
+    final dies = iniciSenseHores.difference(avuiSenseHores).inDays;
+    if (dies == 1) return 'Comença demà!';
+    return 'Queden $dies dies per començar';
   }
+
+  if (iniciSenseHores.isAtSameMomentAs(avuiSenseHores)) {
+    return '✨ COMENÇA AVUI! ✨';
+  }
+
+  DateTime fiSenseHores =
+      DateTime(endDate!.year, endDate!.month, endDate!.day);
+  final difference = fiSenseHores.difference(avuiSenseHores);
+
+  if (difference.isNegative) return '🏆 FINALITZAT 🏆';
+  if (difference.inDays == 0) return 'Últim dia!';
+  return 'Queden ${difference.inDays} dies';
+}
 
   List<String> _getMedalsForUser(String userName) {
     // La teva lògica original, intacta
@@ -195,15 +184,8 @@ class _RankingPageState extends State<RankingPage> {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const EditUserPage()),
-              );
-              _refreshData();
-            },
+          RankingPopupButton(
+            onRefreshNeeded: _refreshData,
           ),
         ],
       ),

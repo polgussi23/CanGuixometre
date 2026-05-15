@@ -41,7 +41,7 @@ class _EditUserPageState extends State<EditUserPage> {
       //final nom = userProvider.nom;
       _userId = userProvider.id;
       final nom = await ApiService.getUserName(_userId!);
-      final estat = await ApiService.getUserEstat(nom!);
+      final estat = await ApiService.getUserEstat(nom);
 
       // Carregar la imatge de perfil
       await _loadUserProfileImage(nom.toString());
