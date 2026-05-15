@@ -58,7 +58,7 @@ class _SaltCalcotPageState extends State<SaltCalcotPage> {
   final Color _colorPissarra = const Color(0xFF263238);
   final Color _colorFustaFosca = const Color(0xFF5D4037);
   final Color _colorBotoActiu = const Color(0xFF8BC34A); // Verd calçot
-  final Color _colorBotoInactiu = const Color(0xFF8D6E63);
+  //final Color _colorBotoInactiu = const Color(0xFF8D6E63);
 
   // --- ESTAT DEL JOC ---
   bool _jocComencat = false;
@@ -115,12 +115,10 @@ class _SaltCalcotPageState extends State<SaltCalcotPage> {
       setState(() => _idUsuariActual = userProvider.id);
       if (_idUsuariActual != null) {
         final nom = await ApiService.getUserName(_idUsuariActual!);
-        if (nom != null) {
-          setState(() {
-            _aliasUsuariActual = nom;
-            _aliasController.text = nom;
-          });
-        }
+        setState(() {
+          _aliasUsuariActual = nom;
+          _aliasController.text = nom;
+        });
       }
     } catch (e) {
       debugPrint("Error al carregar l'usuari: $e");

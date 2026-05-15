@@ -1,10 +1,10 @@
-import 'dart:convert'; // Necessari per json.decode per obtenir l'ID d'usuari
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'add_users_to_photo_page.dart'; // Importa la pàgina de selecció
-import 'package:can_guix/services/api_service.dart'; // Importa el servei API
-import 'package:can_guix/services/user_provider.dart'; // Importa el proveïdor d'usuari
+import 'add_users_to_photo_page.dart';
+import 'package:can_guix/services/api_service.dart';
+import 'package:can_guix/services/user_provider.dart';
 
 class DoAdvertisePage extends StatefulWidget {
   @override
@@ -14,16 +14,22 @@ class DoAdvertisePage extends StatefulWidget {
 class _DoAdvertisePageState extends State<DoAdvertisePage> {
   DateTime selectedDate = DateTime.now();
   String selectedMeal = 'sopar';
-  List<String> participants =
-      []; // Aquesta llista conté els noms dels participants
-  TimeOfDay? selectedTime; // Nuevo campo para la hora
-  bool noTimeSelected = false; // Para la opción "aun no lo tengo claro"
-
-  // Obtenim l'ID de l'usuari actual mitjançant UserProvider
+  List<String> participants = [];
+  TimeOfDay? selectedTime;
+  bool noTimeSelected = false;
   int? _currentUserId;
-
-  // Nuevo campo para el mensaje
   String message = "";
+  final TextEditingController _messageController = TextEditingController();
+
+  // Paleta de colors (dark theme)
+  static const Color _primaryBlue = Color(0xFF60A5FA);
+  static const Color _lightBlue = Color(0xFF1E3A5F);
+  static const Color _cardShadow = Color(0x40000000);
+  static const Color _bgColor = Color(0xFF0F172A);
+  static const Color _cardColor = Color(0xFF1E293B);
+  static const Color _textPrimary = Color(0xFFF1F5F9);
+  static const Color _textSecondary = Color(0xFF94A3B8);
+  static const Color _borderColor = Color(0xFF334155);
 
   @override
   void initState() {
@@ -31,11 +37,16 @@ class _DoAdvertisePageState extends State<DoAdvertisePage> {
     _loadCurrentUserId();
   }
 
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
   void _loadCurrentUserId() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.id;
     setState(() {
-      _currentUserId = userId;
+      _currentUserId = userProvider.id;
     });
   }
 
@@ -44,14 +55,17 @@ class _DoAdvertisePageState extends State<DoAdvertisePage> {
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime.now(),
-      lastDate: DateTime(
-          2100), // No hi ha límit real, però cal posar una data molt futura
+      lastDate: DateTime(2100),
       locale: const Locale('ca', 'ES'),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.light(primary: _primaryBlue),
+        ),
+        child: child!,
+      ),
     );
     if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
+      setState(() => selectedDate = picked);
     }
   }
 
@@ -59,27 +73,18 @@ class _DoAdvertisePageState extends State<DoAdvertisePage> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: selectedTime ?? TimeOfDay.now(),
-      builder: (BuildContext context, Widget? child) {
-        return Localizations.override(
-          context: context,
-          locale: const Locale('ca', 'ES'),
-          child: Builder(
-            builder: (context) {
-              return Theme(
-                data: Theme.of(context),
-                child: child!,
-              );
-            },
-          ),
-        );
-      },
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.light(primary: _primaryBlue),
+        ),
+        child: child!,
+      ),
       helpText: 'Tria hora',
     );
     if (picked != null) {
       setState(() {
         selectedTime = picked;
-        noTimeSelected =
-            false; // Si l'usuari selecciona una hora, desactivem "noTimeSelected"
+        noTimeSelected = false;
       });
     }
   }
@@ -89,43 +94,27 @@ class _DoAdvertisePageState extends State<DoAdvertisePage> {
       context,
       MaterialPageRoute(
         builder: (context) => AddUsersToPhotoPage(
-          title: "QUÍ VE SEGUR?",
-          selectedParticipants: participants, // Passa els noms actuals
+          title: "QUI VE SEGUR?",
+          selectedParticipants: participants,
         ),
       ),
     );
-
-    // Assumint que AddUsersToPhotoPage ja retorna List<String> (noms)
     if (result != null && result is List<String>) {
-      setState(() {
-        participants = result; // Actualitza la llista de noms de participants
-      });
-      print('Participants seleccionats (noms): $participants');
+      setState(() => participants = result);
     }
   }
 
-  // Funció per pujar el nou avís a l'API
   void _uploadNewAdvertise() async {
     if (_currentUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'Error: No s\'ha pogut obtenir l\'ID de l\'usuari creador.')),
-      );
+      _showSnack('No s\'ha pogut obtenir l\'ID de l\'usuari creador.', isError: true);
       return;
     }
 
-    // Format de la data per a l'API (AAAA-MM-DD)
     final String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
-
-    // Format de l'hora per a l'API (HH:MM:SS) o null
     String? formattedTime;
     if (selectedTime != null && !noTimeSelected) {
       formattedTime =
           '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}:00';
-    } else {
-      formattedTime =
-          null; // No enviar hora si és "Encara no ho tinc clar" o "No seleccionada"
     }
 
     try {
@@ -135,202 +124,425 @@ class _DoAdvertisePageState extends State<DoAdvertisePage> {
         horaAvis: formattedTime,
         tipusApat: selectedMeal,
         usuarisParticipants: participants,
-        missatge: message, // <-- Añade esto si tu API lo acepta
+        missatge: message,
       );
 
       if (response.statusCode == 201) {
-        // Avís creat correctament
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Avís creat correctament!')),
-        );
-        Navigator.pop(context); // Tornar a la pantalla anterior
+        _showSnack('Avís creat correctament! ✓', isError: false);
+        Navigator.pop(context);
       } else {
-        // Error en la creació de l'avís
         final errorBody = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Error: ${errorBody['message'] ?? 'Error desconegut'}')),
-        );
-        print('Error al crear avís: ${response.statusCode} - ${response.body}');
+        _showSnack('Error: ${errorBody['message'] ?? 'Error desconegut'}', isError: true);
       }
     } catch (e) {
-      // Error de xarxa o excepció llançada per AvisosApiService
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No s\'ha pogut connectar amb el servidor: $e')),
-      );
-      print('Excepció al crear avís: $e');
+      _showSnack('No s\'ha pogut connectar amb el servidor.', isError: true);
     }
   }
 
+  void _showSnack(String text, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(text),
+      backgroundColor: isError ? Colors.red[700] : Colors.green[700],
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    ));
+  }
+
+  // ── Helpers de text ──────────────────────────────────────────────────────
+  String get _horaText {
+    if (noTimeSelected) return "Encara no ho tinc clar";
+    if (selectedTime != null) {
+      return '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}';
+    }
+    return "No seleccionada";
+  }
+
+  String get _diaText =>
+      DateFormat('EEEE, d MMMM yyyy', 'ca').format(selectedDate);
+
+  // ── Widget helpers ────────────────────────────────────────────────────────
+  Widget _sectionCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: _cardShadow, blurRadius: 10, offset: Offset(0, 4)),
+        ],
+        border: Border.all(color: _borderColor),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _sectionTitle(String label, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: _primaryBlue, size: 20),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: _textPrimary,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: _lightBlue,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _primaryBlue.withOpacity(0.4)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: _primaryBlue,
+        ),
+      ),
+    );
+  }
+
+  Widget _outlineButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton.icon(
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: _primaryBlue,
+        side: const BorderSide(color: _primaryBlue),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      ),
+      onPressed: onPressed,
+    );
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    String horaText;
-    if (noTimeSelected) {
-      horaText = "Encara no ho tinc clar";
-    } else if (selectedTime != null) {
-      final hour = selectedTime!.hour.toString().padLeft(2, '0');
-      final minute = selectedTime!.minute.toString().padLeft(2, '0');
-      horaText = "$hour:$minute";
-    } else {
-      horaText = "No seleccionada";
-    }
-
     return Scaffold(
-      appBar: AppBar(title: Text('Avís de nou àpat')),
+      backgroundColor: _bgColor,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1E293B),
+        foregroundColor: _textPrimary,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Nou avís d\'àpat',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        ),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
-        // <-- Envuelve el contenido aquí
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Escull un dia:', style: TextStyle(fontSize: 16)),
-              Row(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            // ── DIA ──────────────────────────────────────────────────────
+            _sectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    DateFormat('dd/MM/yyyy').format(selectedDate),
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(width: 16),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () => _selectDate(context),
-                    child: Text('Canvia'),
+                  _sectionTitle('Dia', Icons.calendar_today_rounded),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _infoChip(_diaText)),
+                      const SizedBox(width: 12),
+                      _outlineButton(
+                        label: 'Canvia',
+                        icon: Icons.edit_calendar_rounded,
+                        onPressed: () => _selectDate(context),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              SizedBox(height: 24),
-              Text('Escull hora:', style: TextStyle(fontSize: 16)),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    Text(
-                      horaText,
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    SizedBox(width: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
+            ),
+
+            // ── HORA ─────────────────────────────────────────────────────
+            _sectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Hora', Icons.access_time_rounded),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _infoChip(_horaText)),
+                      const SizedBox(width: 12),
+                      _outlineButton(
+                        label: 'Tria',
+                        icon: Icons.schedule_rounded,
+                        onPressed: () => _selectTime(context),
                       ),
-                      onPressed: () => _selectTime(context),
-                      child: Text('Tria hora'),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () => setState(() {
+                      selectedTime = null;
+                      noTimeSelected = true;
+                    }),
+                    child: Row(
+                      children: [
+                        Icon(
+                          noTimeSelected
+                              ? Icons.check_circle_rounded
+                              : Icons.radio_button_unchecked_rounded,
+                          size: 20,
+                          color: noTimeSelected
+                              ? _primaryBlue
+                              : _textSecondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Encara no ho tinc clar',
+                          style: TextStyle(
+                            color: noTimeSelected
+                                ? _primaryBlue
+                                : _textSecondary,
+                            fontWeight: noTimeSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── ÀPAT ─────────────────────────────────────────────────────
+            _sectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Àpat', Icons.restaurant_rounded),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      _MealOption(
+                        label: 'Esmorzar',
+                        emoji: '☕',
+                        value: 'esmorzar',
+                        selected: selectedMeal,
+                        onTap: (v) => setState(() => selectedMeal = v),
+                      ),
+                      const SizedBox(width: 10),
+                      _MealOption(
+                        label: 'Dinar',
+                        emoji: '🍽️',
+                        value: 'dinar',
+                        selected: selectedMeal,
+                        onTap: (v) => setState(() => selectedMeal = v),
+                      ),
+                      const SizedBox(width: 10),
+                      _MealOption(
+                        label: 'Sopar',
+                        emoji: '🌙',
+                        value: 'sopar',
+                        selected: selectedMeal,
+                        onTap: (v) => setState(() => selectedMeal = v),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // ── PARTICIPANTS ──────────────────────────────────────────────
+            _sectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Qui ve segur?', Icons.group_rounded),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                      label: const Text('Afegir participants'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryBlue,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: _selectParticipants,
+                    ),
+                  ),
+                  if (participants.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: participants
+                          .map(
+                            (p) => Chip(
+                              avatar: CircleAvatar(
+                                backgroundColor: _primaryBlue,
+                                child: Text(
+                                  p[0].toUpperCase(),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              label: Text(p, style: const TextStyle(color: _textPrimary)),
+                              backgroundColor: _lightBlue,
+                              side: BorderSide(
+                                  color: _primaryBlue.withOpacity(0.4)),
+                              deleteIcon: Icon(Icons.close, size: 16, color: _textSecondary),
+                              onDeleted: () => setState(
+                                  () => participants.remove(p)),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // ── MISSATGE ──────────────────────────────────────────────────
+            _sectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Vols dir alguna cosa?', Icons.chat_bubble_outline_rounded),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _messageController,
+                    maxLength: 50,
+                    style: const TextStyle(color: _textPrimary),
+                    decoration: InputDecoration(
+                      hintText: 'Escriu un missatge opcional...',
+                      hintStyle: TextStyle(color: _textSecondary, fontSize: 14),
+                      counterText: '${message.length}/50',
+                      counterStyle: TextStyle(color: _textSecondary, fontSize: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: _borderColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide:
+                            const BorderSide(color: _primaryBlue, width: 1.5),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: _borderColor),
+                      ),
+                    ),
+                    onChanged: (v) => setState(() => message = v),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── BOTÓ CONFIRMAR ────────────────────────────────────────────
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF16A34A),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                onPressed: _uploadNewAdvertise,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle_outline_rounded, size: 20),
+                    SizedBox(width: 8),
+                    Text('Confirmar avís'),
                   ],
                 ),
               ),
-              SizedBox(height: 8),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    selectedTime = null;
-                    noTimeSelected = true;
-                  });
-                },
-                child: Text("Encara no ho tinc clar"),
-              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-              SizedBox(height: 24),
-              Text('Escull àpat:', style: TextStyle(fontSize: 16)),
-              Row(
-                children: [
-                  ChoiceChip(
-                    label: Text('Esmorzar',
-                        style: TextStyle(
-                            color: selectedMeal == 'esmorzar'
-                                ? Colors.black
-                                : null)),
-                    selected: selectedMeal == 'esmorzar',
-                    selectedColor: Colors.lightBlue[100],
-                    checkmarkColor: Colors.black,
-                    onSelected: (selected) {
-                      setState(() {
-                        selectedMeal = 'esmorzar';
-                      });
-                    },
-                  ),
-                  SizedBox(width: 8),
-                  ChoiceChip(
-                    label: Text('Dinar',
-                        style: TextStyle(
-                            color:
-                                selectedMeal == 'dinar' ? Colors.black : null)),
-                    selected: selectedMeal == 'dinar',
-                    selectedColor: Colors.lightBlue[100],
-                    checkmarkColor: Colors.black,
-                    onSelected: (selected) {
-                      setState(() {
-                        selectedMeal = 'dinar';
-                      });
-                    },
-                  ),
-                  SizedBox(width: 8),
-                  ChoiceChip(
-                    label: Text('Sopar',
-                        style: TextStyle(
-                            color:
-                                selectedMeal == 'sopar' ? Colors.black : null)),
-                    selected: selectedMeal == 'sopar',
-                    selectedColor: Colors.lightBlue[100],
-                    checkmarkColor: Colors.black,
-                    onSelected: (selected) {
-                      setState(() {
-                        selectedMeal = 'sopar';
-                      });
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(height: 24),
-              Text('Saps qui vindrà segur?', style: TextStyle(fontSize: 16)),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                ),
-                icon: Icon(Icons.group),
-                label: Text('Digues qui vindrà'),
-                onPressed: _selectParticipants,
-              ),
-              SizedBox(height: 8),
-              Wrap(
-                spacing: 8.0,
-                children:
-                    participants.map((p) => Chip(label: Text(p))).toList(),
-              ),
-              SizedBox(height: 24),
-              // NUEVO APARTADO
-              Text('Vols dir alguna cosa?', style: TextStyle(fontSize: 16)),
-              SizedBox(height: 8),
-              TextField(
-                maxLength: 50,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Escriu aquí (màxim 50 caràcters)',
-                  counterText: '', // Oculta el contador
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    message = value;
-                  });
-                },
-              ),
-              SizedBox(height: 24),
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: _uploadNewAdvertise, // Cridem la nova funció aquí
-                  child: Text('Confirmar'),
+// ── Widget auxiliar per a cada opció d'àpat ───────────────────────────────
+class _MealOption extends StatelessWidget {
+  final String label;
+  final String emoji;
+  final String value;
+  final String selected;
+  final ValueChanged<String> onTap;
+
+  const _MealOption({
+    required this.label,
+    required this.emoji,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSelected = selected == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => onTap(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFF1D4ED8)
+                : const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF60A5FA)
+                  : const Color(0xFF334155),
+            ),
+          ),
+          child: Column(
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 22)),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
                 ),
               ),
             ],

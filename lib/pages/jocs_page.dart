@@ -17,33 +17,35 @@ class JocsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Zona de Jocs")),
-      body: Center(
-        child: Column(
-          spacing: 50,
-          children: [
-            SizedBox(),
-            GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => BuscaAllsPage()));
-                },
-                child: Image.asset('assets/images/jocs/buscaAlls/buscaAlls.png',
-                    width: calculWidthImatges(context))),
-            GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => PescaFregitsPage()));
-                },
-                child: Image.asset('assets/images/jocs/pescaFregitsLogo.png',
-                    width: calculWidthImatges(context))),
-            GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SaltCalcotPage()));
-                },
-                child: Image.asset('assets/images/jocs/saltCalcot/saltCalcotLogo.png',
-                    width: calculWidthImatges(context))),
-          ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            spacing: 50,
+            children: [
+              SizedBox(),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => BuscaAllsPage()));
+                  },
+                  child: Image.asset('assets/images/jocs/buscaAlls/buscaAlls.png',
+                      width: calculWidthImatges(context))),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => PescaFregitsPage()));
+                  },
+                  child: Image.asset('assets/images/jocs/pescaFregitsLogo.png',
+                      width: calculWidthImatges(context))),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => SaltCalcotPage()));
+                  },
+                  child: Image.asset('assets/images/jocs/saltCalcot/saltCalcotLogo.png',
+                      width: calculWidthImatges(context))),
+            ],
+          ),
         ),
       ),
     );

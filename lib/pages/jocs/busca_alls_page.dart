@@ -82,13 +82,11 @@ class _BuscaAllsPageState extends State<BuscaAllsPage> {
       if (_idUsuariActual != null) {
         // Obtenim el nom real des de l'API
         final nom = await ApiService.getUserName(_idUsuariActual!);
-        if (nom != null) {
-          setState(() {
-            _aliasUsuariActual = nom;
-            // Actualitzem el controller per quan surti el diàleg
-            _aliasController.text = nom;
-          });
-        }
+        setState(() {
+          _aliasUsuariActual = nom;
+          // Actualitzem el controller per quan surti el diàleg
+          _aliasController.text = nom;
+        });
       }
     } catch (e) {
       print("Error al carregar les dades de l'usuari: $e");

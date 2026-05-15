@@ -6,21 +6,21 @@ import 'dart:io';
 
 class ApiService {
   // ------------------------------- API PRO -------------------------------
-  static String apiUrl = "https://polgussi.cat:3001"; //                 |
+  //static String apiUrl = "https://polgussi.cat:3001"; //                 |
   // -----------------------------------------------------------------------
 
   // ------------------------------- API DEV -------------------------------
-  //static String apiUrl = "https://polgussi.cat:4001"; //                   |
+  static String apiUrl = "https://polgussi.cat:4001"; //                   |
   // -----------------------------------------------------------------------
 
   void initState() {
     if (!kIsWeb) {
       // ------------------------------- API PRO -------------------------------
-      apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
+      //apiUrl = 'http://polgussi.cat:3000'; // HTTP //                         |
       // -----------------------------------------------------------------------
 
       // ------------------------------- API DEV -------------------------------
-      //apiUrl = 'http://polgussi.cat:4000'; //                                  |
+      apiUrl = 'http://polgussi.cat:4000'; //                                  |
       // -----------------------------------------------------------------------
     }
   }
@@ -349,14 +349,14 @@ class ApiService {
 
   static Future<void> postResultatBuscaAlls(
       int usuari_id, String alias, int temps) async {
-    final response = await http.post(
-        Uri.parse('$apiUrl/jocs/busca-alls/guardar'),
-        headers: <String, String>{'Content-type': 'application/json'},
-        body: jsonEncode(<String, dynamic>{
-          'usuari_id': usuari_id,
-          'alias': alias,
-          'temps': temps
-        }));
+    await http.post(
+      Uri.parse('$apiUrl/jocs/busca-alls/guardar'),
+      headers: <String, String>{'Content-type': 'application/json'},
+      body: jsonEncode(<String, dynamic>{
+        'usuari_id': usuari_id,
+        'alias': alias,
+        'temps': temps
+      }));
   }
 
   static Future<List<Map<String, dynamic>>> getPescaFregitsRanking() async {
@@ -377,14 +377,14 @@ class ApiService {
 
   static Future<void> postResultatPescaFregits(
       int usuari_id, String alias, int puntuacio) async {
-    final response = await http.post(
-        Uri.parse('$apiUrl/jocs/pesca-fregits/guardar'),
-        headers: <String, String>{'Content-type': 'application/json'},
-        body: jsonEncode(<String, dynamic>{
-          'usuari_id': usuari_id,
-          'alias': alias,
-          'puntuacio': puntuacio
-        }));
+    await http.post(
+      Uri.parse('$apiUrl/jocs/pesca-fregits/guardar'),
+      headers: <String, String>{'Content-type': 'application/json'},
+      body: jsonEncode(<String, dynamic>{
+        'usuari_id': usuari_id,
+        'alias': alias,
+        'puntuacio': puntuacio
+      }));
   }
 
   static Future<List<Map<String, dynamic>>> getSaltCalcotRanking() async {
@@ -405,14 +405,14 @@ class ApiService {
 
   static Future<void> postResultatSaltCalcot(
       int usuari_id, String alias, int puntuacio) async {
-    final response = await http.post(
-        Uri.parse('$apiUrl/jocs/salt-calcot/guardar'),
-        headers: <String, String>{'Content-type': 'application/json'},
-        body: jsonEncode(<String, dynamic>{
-          'usuari_id': usuari_id,
-          'alias': alias,
-          'puntuacio': puntuacio
-        }));
+    await http.post(
+      Uri.parse('$apiUrl/jocs/salt-calcot/guardar'),
+      headers: <String, String>{'Content-type': 'application/json'},
+      body: jsonEncode(<String, dynamic>{
+        'usuari_id': usuari_id,
+        'alias': alias,
+        'puntuacio': puntuacio
+      }));
   }
 
   static Future<void> submitScore(String user, num score) async {

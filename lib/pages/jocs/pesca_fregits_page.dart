@@ -119,12 +119,10 @@ class _PescaFregitsPageState extends State<PescaFregitsPage> {
       setState(() => _idUsuariActual = userProvider.id);
       if (_idUsuariActual != null) {
         final nom = await ApiService.getUserName(_idUsuariActual!);
-        if (nom != null) {
-          setState(() {
-            _aliasUsuariActual = nom;
-            _aliasController.text = nom;
-          });
-        }
+        setState(() {
+          _aliasUsuariActual = nom;
+          _aliasController.text = nom;
+        });
       }
     } catch (e) {
       debugPrint("Error al carregar l'usuari: $e");
