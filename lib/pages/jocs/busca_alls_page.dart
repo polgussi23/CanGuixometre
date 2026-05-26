@@ -327,135 +327,145 @@ class _BuscaAllsPageState extends State<BuscaAllsPage> {
       barrierDismissible: false,
       builder: (context) {
         // Fem servir StatefulBuilder dins del Dialog per gestionar estats locals (loading botó)
-        return StatefulBuilder(builder: (context, setStateDialog) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFFFFF8E1),
-            shape:
-                BeveledRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            title: Text(
-              victoria ? "🎉 HAS GUANYAT! 🎉" : "💥 CAGADA PASTOR! 💥",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: _colorFustaFosca,
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  victoria
-                      ? "Has trobat tots els alls!"
-                      : "Has trinxat un all que no tocava.",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 18, color: Color.fromARGB(255, 160, 160, 160)),
+        
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult:(didPop, result) {
+            if(!didPop){
+              Navigator.pop(context);
+              Navigator.pop(context);
+            }
+          },
+          child: StatefulBuilder(builder: (context, setStateDialog) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFFFFF8E1),
+              shape:
+                  BeveledRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              title: Text(
+                victoria ? "🎉 HAS GUANYAT! 🎉" : "💥 CAGADA PASTOR! 💥",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _colorFustaFosca,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
                 ),
-                const SizedBox(height: 15),
-
-                // --- INPUT PER L'ALIAS (NOMÉS SI ES GUANYA) ---
-                if (victoria) ...[
-                  const Text("Guardar rècord com a:",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 110, 110, 110))),
-                  const SizedBox(height: 5),
-                  TextField(
-                    controller: _aliasController,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    victoria
+                        ? "Has trobat tots els alls!"
+                        : "Has trinxat un all que no tocava.",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: _colorFustaFosca,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5)),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                    ),
+                    style: const TextStyle(
+                        fontSize: 18, color: Color.fromARGB(255, 160, 160, 160)),
                   ),
                   const SizedBox(height: 15),
-                ],
-
-                Divider(color: _colorFustaFosca, thickness: 2),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.hourglass_bottom, color: _colorFustaFosca),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Temps: $_segons s",
+          
+                  // --- INPUT PER L'ALIAS (NOMÉS SI ES GUANYA) ---
+                  if (victoria) ...[
+                    const Text("Guardar rècord com a:",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 110, 110, 110))),
+                    const SizedBox(height: 5),
+                    TextField(
+                      controller: _aliasController,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: _colorFustaFosca),
+                          color: _colorFustaFosca,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                      ),
                     ),
+                    const SizedBox(height: 15),
                   ],
-                ),
+          
+                  Divider(color: _colorFustaFosca, thickness: 2),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.hourglass_bottom, color: _colorFustaFosca),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Temps: $_segons s",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: _colorFustaFosca),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10.0),
+                    child: victoria
+                        // BOTÓ DE GUARDAR (SI VICTÒRIA)
+                        ? ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _colorPissarra,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)),
+                            ),
+                            onPressed: _guardantPuntuacio
+                                ? null
+                                : () {
+                                    // Guardem amb el nom que hi hagi a l'input
+                                    _enviarPuntuacioAPID(_aliasController.text);
+                                  },
+                            icon: _guardantPuntuacio
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white, strokeWidth: 2))
+                                : const Icon(Icons.save),
+                            label: Text(
+                                _guardantPuntuacio
+                                    ? "GUARDANT..."
+                                    : "GUARDAR PUNTUACIÓ",
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.bold)),
+                          )
+                        // BOTÓ DE REINICIAR (SI DERROTA)
+                        : ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _colorPissarra,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _resetJoc();
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text("TORNAR-HI",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                  ),
+                )
               ],
-            ),
-            actions: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: victoria
-                      // BOTÓ DE GUARDAR (SI VICTÒRIA)
-                      ? ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _colorPissarra,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 25, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5)),
-                          ),
-                          onPressed: _guardantPuntuacio
-                              ? null
-                              : () {
-                                  // Guardem amb el nom que hi hagi a l'input
-                                  _enviarPuntuacioAPID(_aliasController.text);
-                                },
-                          icon: _guardantPuntuacio
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      color: Colors.white, strokeWidth: 2))
-                              : const Icon(Icons.save),
-                          label: Text(
-                              _guardantPuntuacio
-                                  ? "GUARDANT..."
-                                  : "GUARDAR PUNTUACIÓ",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                        )
-                      // BOTÓ DE REINICIAR (SI DERROTA)
-                      : ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _colorPissarra,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 25, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5)),
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _resetJoc();
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: const Text("TORNAR-HI",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                ),
-              )
-            ],
-          );
-        });
+            );
+          }),
+        );
       },
     );
   }
