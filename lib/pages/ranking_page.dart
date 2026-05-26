@@ -18,20 +18,37 @@ class RankingPage extends StatefulWidget {
 
 class _RankingPageState extends State<RankingPage> {
   List<dynamic> rankings = [];
+  List<dynamic> monthlyRankings = [];
   List<dynamic> usuarisBonus = [];
   Map<String, Uint8List> userProfileImages = {};
   DateTime? endDate;
   DateTime? startDate;
 
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
   @override
   void initState() {
     super.initState();
+    _pageController.addListener(() {
+      final page = _pageController.page?.round() ?? 0;
+      if (page != _currentPage) {
+        setState(() => _currentPage = page);
+      }
+    });
     _refreshData();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _refreshData() async {
     await Future.wait([
       fetchRankings(),
+      fetchMonthlyRankings(),
       fetchUserProfileImages(),
       getEndDate(),
       getStartDate(),
@@ -49,6 +66,17 @@ class _RankingPageState extends State<RankingPage> {
     }
   }
 
+  Future<void> fetchMonthlyRankings() async {
+    try {
+      List<dynamic> data = await ApiService.getMonthRanking();
+      if (mounted) {
+        setState(() => monthlyRankings = data);
+      }
+    } catch (e) {
+      print('Error rànquing mensual: $e');
+    }
+  }
+
   Future<void> fetchUserProfileImages() async {
     try {
       List<UserImageData> imagesData =
@@ -58,9 +86,7 @@ class _RankingPageState extends State<RankingPage> {
         imagesMap[image.user] = image.image;
       }
       if (mounted) {
-        setState(() {
-          userProfileImages = imagesMap;
-        });
+        setState(() => userProfileImages = imagesMap);
       }
     } catch (e) {
       print('Error imatges: $e');
@@ -71,9 +97,7 @@ class _RankingPageState extends State<RankingPage> {
     try {
       List<dynamic> data = await ApiService.getEndDate();
       if (data.isNotEmpty && mounted) {
-        setState(() {
-          endDate = DateTime.parse(data[0]['date']);
-        });
+        setState(() => endDate = DateTime.parse(data[0]['date']));
       }
     } catch (e) {
       print('Error data final: $e');
@@ -84,9 +108,7 @@ class _RankingPageState extends State<RankingPage> {
     try {
       List<dynamic> data = await ApiService.getStartDate();
       if (data.isNotEmpty && mounted) {
-        setState(() {
-          startDate = DateTime.parse(data[0]['date']);
-        });
+        setState(() => startDate = DateTime.parse(data[0]['date']));
       }
     } catch (e) {
       print('Error data inici: $e');
@@ -94,36 +116,44 @@ class _RankingPageState extends State<RankingPage> {
   }
 
   String _titleText() {
-  DateTime now = DateTime.now();
-  DateTime avuiSenseHores = DateTime(now.year, now.month, now.day);
+    if (_currentPage == 1) {
+      final now = DateTime.now();
+      final mesAnterior = DateTime(now.year, now.month - 1);
+      final nomMes = _nomMes(mesAnterior.month);
+      return 'RÀNQUING ${nomMes.toUpperCase()}';
+    }
 
-  // Retorna si falta qualsevol de les dues dates
-  if (startDate == null || endDate == null) return 'RÀNQUING CAN GUIX';
+    DateTime now = DateTime.now();
+    DateTime avuiSenseHores = DateTime(now.year, now.month, now.day);
+    if (startDate == null || endDate == null) return 'RÀNQUING CAN GUIX';
 
-  DateTime iniciSenseHores =
-      DateTime(startDate!.year, startDate!.month, startDate!.day);
-
-  if (iniciSenseHores.isAfter(avuiSenseHores)) {
-    final dies = iniciSenseHores.difference(avuiSenseHores).inDays;
-    if (dies == 1) return 'Comença demà!';
-    return 'Queden $dies dies per començar';
+    DateTime iniciSenseHores =
+        DateTime(startDate!.year, startDate!.month, startDate!.day);
+    if (iniciSenseHores.isAfter(avuiSenseHores)) {
+      final dies = iniciSenseHores.difference(avuiSenseHores).inDays;
+      if (dies == 1) return 'Comença demà!';
+      return 'Queden $dies dies per començar';
+    }
+    if (iniciSenseHores.isAtSameMomentAs(avuiSenseHores)) {
+      return '✨ COMENÇA AVUI! ✨';
+    }
+    DateTime fiSenseHores =
+        DateTime(endDate!.year, endDate!.month, endDate!.day);
+    final difference = fiSenseHores.difference(avuiSenseHores);
+    if (difference.isNegative) return '🏆 FINALITZAT 🏆';
+    if (difference.inDays == 0) return 'Últim dia!';
+    return 'Queden ${difference.inDays} dies';
   }
 
-  if (iniciSenseHores.isAtSameMomentAs(avuiSenseHores)) {
-    return '✨ COMENÇA AVUI! ✨';
+  String _nomMes(int mes) {
+    const mesos = [
+      '', 'Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
+      'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'
+    ];
+    return mesos[mes];
   }
-
-  DateTime fiSenseHores =
-      DateTime(endDate!.year, endDate!.month, endDate!.day);
-  final difference = fiSenseHores.difference(avuiSenseHores);
-
-  if (difference.isNegative) return '🏆 FINALITZAT 🏆';
-  if (difference.inDays == 0) return 'Últim dia!';
-  return 'Queden ${difference.inDays} dies';
-}
 
   List<String> _getMedalsForUser(String userName) {
-    // La teva lògica original, intacta
     List<String> medals = [];
     for (var ub in usuarisBonus) {
       if (ub['nom'] == userName) {
@@ -138,7 +168,6 @@ class _RankingPageState extends State<RankingPage> {
     return medals;
   }
 
-  // --- Popups i Diàlegs (UI Helpers) ---
   void _showLargeImage(String userName) {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -148,8 +177,7 @@ class _RankingPageState extends State<RankingPage> {
         pageBuilder: (context, _, __) {
           return SmartImageDialog(
             userName: userName,
-            lowResImage:
-                userProfileImages[userName], // Passem la foto petita inicial
+            lowResImage: userProfileImages[userName],
             heroTag: userName,
           );
         },
@@ -170,6 +198,169 @@ class _RankingPageState extends State<RankingPage> {
     );
   }
 
+  // --- Rànquing genèric (global o mensual) ---
+  Widget _buildRankingBody(List<dynamic> data, {bool showMedals = true}) {
+    if (data.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      color: Colors.amber,
+      child: CustomScrollView(
+        slivers: [
+          if (data.length >= 3)
+            SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 30, 16, 20),
+                decoration: const BoxDecoration(
+                  color: kDarkSurfaceColor,
+                  borderRadius:
+                      BorderRadius.vertical(bottom: Radius.circular(30)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: FadeInUp(
+                        duration: const Duration(milliseconds: 800),
+                        delay: const Duration(milliseconds: 200),
+                        child: PodiumItem(
+                          user: data[1],
+                          position: 2,
+                          height: 110,
+                          imageBytes: userProfileImages[data[1]['nom']],
+                          medals: showMedals
+                              ? _getMedalsForUser(data[1]['nom'])
+                              : [],
+                          onImageTap: _showLargeImage,
+                          onMedalTap: _showMedalPopup,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Transform.translate(
+                        offset: const Offset(0, -10),
+                        child: FadeInUp(
+                          duration: const Duration(milliseconds: 800),
+                          delay: const Duration(milliseconds: 400),
+                          child: PodiumItem(
+                            user: data[0],
+                            position: 1,
+                            height: 150,
+                            imageBytes: userProfileImages[data[0]['nom']],
+                            medals: showMedals
+                                ? _getMedalsForUser(data[0]['nom'])
+                                : [],
+                            onImageTap: _showLargeImage,
+                            onMedalTap: _showMedalPopup,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: FadeInUp(
+                        duration: const Duration(milliseconds: 800),
+                        child: PodiumItem(
+                          user: data[2],
+                          position: 3,
+                          height: 90,
+                          imageBytes: userProfileImages[data[2]['nom']],
+                          medals: showMedals
+                              ? _getMedalsForUser(data[2]['nom'])
+                              : [],
+                          onImageTap: _showLargeImage,
+                          onMedalTap: _showMedalPopup,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 20, bottom: 40),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final actualIndex = index + 3;
+                  final bool shouldAnimate = index < 6;
+                  Widget tile = RankingTile(
+                    user: data[actualIndex],
+                    index: actualIndex,
+                    imageBytes: userProfileImages[data[actualIndex]['nom']],
+                    medals: showMedals
+                        ? _getMedalsForUser(data[actualIndex]['nom'])
+                        : [],
+                    onImageTap: _showLargeImage,
+                    onMedalTap: _showMedalPopup,
+                  );
+                  if (shouldAnimate) {
+                    return FadeInLeft(
+                      duration: const Duration(milliseconds: 500),
+                      delay: Duration(milliseconds: index * 50),
+                      child: tile,
+                    );
+                  }
+                  return tile;
+                },
+                childCount: data.length > 3 ? data.length - 3 : 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+ // Afegeix aquest widget nou
+Widget _buildTabSelector() {
+  return Container(
+    margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(
+      color: kDarkSurfaceColor,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        _buildTab(index: 0, label: '🌍 Global'),
+        _buildTab(index: 1, label: '📅 Mensual'),
+      ],
+    ),
+  );
+}
+
+Widget _buildTab({required int index, required String label}) {
+  final bool isActive = _currentPage == index;
+  return Expanded(
+    child: GestureDetector(
+      onTap: () => _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.amber : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: isActive ? Colors.black : Colors.white54,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,135 +368,35 @@ class _RankingPageState extends State<RankingPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: kDarkBackgroundColor,
-        foregroundColor: Colors.white, // Text negre
+        foregroundColor: Colors.white,
         centerTitle: true,
-        title: Text(
-          _titleText(),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            _titleText(),
+            key: ValueKey(_currentPage),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
         ),
         actions: [
-          RankingPopupButton(
-            onRefreshNeeded: _refreshData,
-          ),
+          RankingPopupButton(onRefreshNeeded: _refreshData),
         ],
       ),
-      body: rankings.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _refreshData,
-              color: Colors.amber,
-              child: CustomScrollView(
-                slivers: [
-                  // --- SECCIÓ PODI (TOP 3) ---
-                  if (rankings.length >= 3)
-                    SliverToBoxAdapter(
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(16, 30, 16, 20),
-                        decoration: const BoxDecoration(
-                          color: kDarkSurfaceColor,
-                          borderRadius: BorderRadius.vertical(
-                              bottom: Radius.circular(30)),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            // 2n Lloc (Esquerra)
-                            Expanded(
-                                child: FadeInUp(
-                              duration: Duration(milliseconds: 800),
-                              delay: const Duration(milliseconds: 200),
-                              child: PodiumItem(
-                                user: rankings[1],
-                                position: 2,
-                                height: 110,
-                                imageBytes:
-                                    userProfileImages[rankings[1]['nom']],
-                                medals: _getMedalsForUser(rankings[1]['nom']),
-                                onImageTap: _showLargeImage,
-                                onMedalTap: _showMedalPopup,
-                              ),
-                            )),
-                            // 1r Lloc (Centre - Més gran)
-                            Expanded(
-                              flex: 1,
-                              child: Transform.translate(
-                                offset: const Offset(
-                                    0, -10), // El teu ajustament original
-                                child: FadeInUp(
-                                  duration: const Duration(milliseconds: 800),
-                                  delay: const Duration(milliseconds: 400),
-                                  child: PodiumItem(
-                                    user: rankings[0],
-                                    position: 1,
-                                    height: 150,
-                                    imageBytes:
-                                        userProfileImages[rankings[0]['nom']],
-                                    medals:
-                                        _getMedalsForUser(rankings[0]['nom']),
-                                    onImageTap: _showLargeImage,
-                                    onMedalTap: _showMedalPopup,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // 3r Lloc (Dreta)
-                            Expanded(
-                                child: FadeInUp(
-                              duration: Duration(milliseconds: 800),
-                              child: PodiumItem(
-                                user: rankings[2],
-                                position: 3,
-                                height: 90,
-                                imageBytes:
-                                    userProfileImages[rankings[2]['nom']],
-                                medals: _getMedalsForUser(rankings[2]['nom']),
-                                onImageTap: _showLargeImage,
-                                onMedalTap: _showMedalPopup,
-                              ),
-                            )),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                  // --- SECCIÓ LLISTA (DEL 4T AL FINAL) ---
-                  SliverPadding(
-                    padding: const EdgeInsets.only(top: 20, bottom: 40),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final actualIndex = index + 3;
-                          bool shouldAnimate = index < 6;
-
-                          Widget tile = RankingTile(
-                            user: rankings[actualIndex],
-                            index: actualIndex,
-                            imageBytes:
-                                userProfileImages[rankings[actualIndex]['nom']],
-                            medals:
-                                _getMedalsForUser(rankings[actualIndex]['nom']),
-                            onImageTap: _showLargeImage,
-                            onMedalTap: _showMedalPopup,
-                          );
-                          if (shouldAnimate) {
-                            return FadeInLeft(
-                              duration: const Duration(milliseconds: 500),
-                              delay: Duration(milliseconds: index * 50),
-                              child: tile,
-                            );
-                          } else {
-                            return tile;
-                          }
-                        },
-                        childCount:
-                            rankings.length > 3 ? rankings.length - 3 : 0,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      body: Column(
+        children: [
+          _buildTabSelector(),   // <-- Pestanyes a dalt
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              children: [
+                _buildRankingBody(rankings, showMedals: true),
+                _buildRankingBody(monthlyRankings, showMedals: false),
+              ],
             ),
+          ),
+          // Elimina _buildPageIndicator() d'aquí
+        ],
+      ),
     );
   }
 }
